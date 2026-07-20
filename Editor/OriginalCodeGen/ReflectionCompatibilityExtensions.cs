@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -66,6 +67,12 @@ namespace ZergRush.CodeGen
         public static bool HasInHierarchy(this Type type, Func<Type, bool> predicate)
         {
             return ParentWithPredicate(type, predicate) != null;
+        }
+
+        public static IEnumerable<Type> Parents(this Type type)
+        {
+            for (var current = type?.BaseType; current != null; current = current.BaseType)
+                yield return current;
         }
 
         public static Type ParentWithTag<T>(this Type type) where T : Attribute
