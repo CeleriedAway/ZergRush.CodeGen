@@ -1,9 +1,11 @@
+using System;
+
 namespace ZergRush.CodeGen
 {
     public sealed class DataInfo
     {
-        public ZRType type;
-        public ZRType carrierType;
+        public Type type;
+        public Type carrierType;
         public string baseAccess;
         public bool canBeNull;
         public bool sureIsNull;
@@ -12,11 +14,15 @@ namespace ZergRush.CodeGen
 
         public DataInfo SetupIsCell()
         {
-            if (type != null && type.IsCell())
+            if (type != null && (type.IsCell() || type.IsLivableSlot()))
             {
-                var arguments = type.GetGenericArguments();
-                if (arguments.Length == 1) type = arguments[0];
+                type = type.FirstGenericArg();
                 baseAccess += ".value";
+            }
+            else if (type != null && type.IsNullable())
+            {
+                type = Nullable.GetUnderlyingType(type);
+                canBeNull = true;
             }
             return this;
         }
@@ -27,7 +33,7 @@ namespace ZergRush.CodeGen
             if (canBeNull) options |= ZRDataOption.CanBeNull;
             if (sureIsNull) options |= ZRDataOption.SureIsNull;
             if (type != null && type.IsNullable()) options |= ZRDataOption.IsNullable;
-            return new ZRData(baseAccess, type, options);
+            return new ZRData(baseAccess, ZRType.FromSystemType(type), options);
         }
     }
 
@@ -42,8 +48,9 @@ namespace ZergRush.CodeGen
         public static void GenReadValueFromStream(MethodBuilder sink, DataInfo info, string stream,
             bool pooled, bool needVar = false, bool readDataNodeFromId = false)
         {
-            var carrier = info.carrierType ?? info.type;
-            GenReadValueFromStream(sink, info.ToZRData(), info.type, info.baseAccess, carrier,
+            var declaredType = ZRType.FromSystemType(info.type);
+            var carrier = ZRType.FromSystemType(info.carrierType ?? info.type);
+            GenReadValueFromStream(sink, info.ToZRData(), declaredType, info.baseAccess, carrier,
                 stream, pooled, needVar);
         }
 
@@ -56,8 +63,9 @@ namespace ZergRush.CodeGen
         public static void ReadJsonValueStatement(MethodBuilder sink, DataInfo info,
             bool needCreateVar, bool useTempVar)
         {
-            var carrier = info.carrierType ?? info.type;
-            ReadJsonValueStatement(sink, info.ToZRData(), info.type, info.baseAccess, carrier,
+            var declaredType = ZRType.FromSystemType(info.type);
+            var carrier = ZRType.FromSystemType(info.carrierType ?? info.type);
+            ReadJsonValueStatement(sink, info.ToZRData(), declaredType, info.baseAccess, carrier,
                 needCreateVar, useTempVar);
         }
     }
