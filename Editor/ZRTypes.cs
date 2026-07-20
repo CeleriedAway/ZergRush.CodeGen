@@ -196,6 +196,7 @@ public class ZRType
     public bool HasDeclaredParameterlessConstructor;
     public bool HasDeclaredConstructors;
     public string WrittenName = "";
+    public Type? ReflectionType { get; internal set; }
 
     public bool IsClass => Kind == ZRTypeKind.Class;
     public bool IsStructLike => Kind == ZRTypeKind.Struct;
@@ -417,6 +418,7 @@ public class ZRType
 
     public Type? TryResolveSystemType()
     {
+        if (ReflectionType != null) return ReflectionType;
         if (this == typeof(void)) return typeof(void);
         if (this == typeof(int)) return typeof(int);
         if (this == typeof(uint)) return typeof(uint);
@@ -530,7 +532,8 @@ public class ZRType
             IsAbstract = type.IsAbstract,
             IsSealed = type.IsSealed,
             HasDeclaredParameterlessConstructor = type.GetConstructor(Type.EmptyTypes) != null,
-            HasDeclaredConstructors = type.GetConstructors().Length > 0
+            HasDeclaredConstructors = type.GetConstructors().Length > 0,
+            ReflectionType = type
         };
         systemTypeCache[type] = result;
 
@@ -555,12 +558,12 @@ public class ZRType
     static ZRTypeKind KindFromSystemType(Type type)
     {
         if (type == typeof(void)) return ZRTypeKind.Void;
+        if (type.IsGenericParameter) return ZRTypeKind.GenericParameter;
         if (type.IsEnum) return ZRTypeKind.Enum;
         if (type.IsPrimitive || type == typeof(decimal)) return ZRTypeKind.Primitive;
         if (type.IsValueType) return ZRTypeKind.Struct;
         if (type.IsInterface) return ZRTypeKind.Interface;
         if (type.IsClass) return ZRTypeKind.Class;
-        if (type.IsGenericParameter) return ZRTypeKind.GenericParameter;
         return ZRTypeKind.Unknown;
     }
 
@@ -606,9 +609,15 @@ public class ZRType
 public class ZRMethod
 {
     public string Name = "";
+    public ZRType? DeclaringType;
+    public ZRType ReturnType = ZRType.FromSystemType(typeof(void));
     public bool IsVirtual;
     public bool IsAbstract;
+    public bool IsStatic;
+    public ZRMemberVisibility Visibility;
     public List<ZRParameter> Parameters = new();
+    public List<ZRAttributeInfo> Attributes = new();
+    public MethodInfo? ReflectionMethod { get; internal set; }
 
     public ZRParameter[] GetParameters()
     {
@@ -620,6 +629,9 @@ public class ZRParameter
 {
     public string Name = "";
     public ZRType ParameterType = ZRType.FromSystemType(typeof(object));
+    public bool HasDefaultValue;
+    public object? DefaultValue;
+    public List<ZRAttributeInfo> Attributes = new();
 }
 
 public class ZRMember

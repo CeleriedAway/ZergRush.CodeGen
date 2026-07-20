@@ -1,6 +1,7 @@
 using System;
 using Type = ZergRush.CodeGen.ZRType;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ZergRush;
 using ZergRush.Alive;
@@ -398,7 +399,8 @@ namespace ZergRush.CodeGen
 
         static Type ConfigRootType(this Type t)
         {
-            var configType = t.FindTagInHierarchy<ConfigRootType>()?.type;
+            var configType = t.ParentsAndSelf().Select(candidate => candidate.ConfigRootType)
+                .FirstOrDefault(root => root != null);
             if (configType == null)
             {
                 if (typeRequestMap.TryGetValue(t, out var requesters))

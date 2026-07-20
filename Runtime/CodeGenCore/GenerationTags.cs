@@ -254,6 +254,7 @@ public class UIDUseClassNameHash : Attribute
 // process and you can request types for generation in main chunk with CodeGen.RequestGen
 // and use CodeGen.context to gen modules and classes ect...
 [AttributeUsage(AttributeTargets.Method)]
+[Obsolete("Register an explicit generator with CodeGenSession.AddGenerator instead.")]
 public class CodeGenExtension : Attribute
 {
 }

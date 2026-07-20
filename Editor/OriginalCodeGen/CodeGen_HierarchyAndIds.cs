@@ -37,7 +37,7 @@ namespace ZergRush.CodeGen
         
         static void GenerateConstructionFromRoot(Type type)
         {
-            var rootType = type.FindTagInHierarchy<RootType>()?.type;
+            var rootType = type.ParentsAndSelf().Select(candidate => candidate.RootType).FirstOrDefault(root => root != null);
             if (rootType == null) return;
             
             Action<MethodBuilder> fillCreateWithLivableSetup = sink =>

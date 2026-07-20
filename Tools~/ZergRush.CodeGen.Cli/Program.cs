@@ -1,9 +1,16 @@
 using ZergRush.CodeGen;
 
 string? generationOutput = null;
+var preserveTargetFolders = false;
 var inputs = new List<string>();
 for (var i = 0; i < args.Length; i++)
 {
+    if (args[i] == "--preserve-target-folders")
+    {
+        preserveTargetFolders = true;
+        continue;
+    }
+
     if (args[i] == "--generate")
     {
         if (++i >= args.Length) throw new ArgumentException("--generate requires an output directory.");
@@ -28,18 +35,23 @@ var types = parser.ParseInputs(inputs);
 
 if (generationOutput != null)
 {
-    foreach (var type in types)
+    if (!preserveTargetFolders)
     {
-        type.TargetFolder = new ZRTargetFolderInfo
+        foreach (var type in types)
         {
-            Folder = generationOutput,
-            Inheritable = true,
-            Priority = type.TargetFolder?.Priority ?? 1
-        };
+            type.TargetFolder = new ZRTargetFolderInfo
+            {
+                Folder = generationOutput,
+                Inheritable = true,
+                Priority = type.TargetFolder?.Priority ?? 1
+            };
+        }
     }
 
     CodeGen.Gen(types, generationOutput);
-    Console.WriteLine($"Generated {Directory.EnumerateFiles(generationOutput, "*.cs").Count()} files in {generationOutput}");
+    Console.WriteLine(preserveTargetFolders
+        ? $"Generated source using parsed target folders and {generationOutput} as fallback."
+        : $"Generated source into {generationOutput}.");
     return;
 }
 

@@ -1411,588 +1411,6 @@ public static partial class SerializationExtensions
         }
         writer.WriteEndArray();
     }
-    public static void UpdateFrom(ref this ZergRush.Samples.CustomStruct self, ZergRush.Samples.CustomStruct other, ZRUpdateFromHelper __helper) 
-    {
-        self.id = other.id;
-        self.name = other.name;
-    }
-    public static void UpdateFrom(this ZergRush.ReactiveCore.Cell<ZergRush.Samples.CustomStruct> self, ZergRush.ReactiveCore.Cell<ZergRush.Samples.CustomStruct> other, ZRUpdateFromHelper __helper) 
-    {
-
-    }
-    public static void UpdateFrom(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, System.Collections.Generic.List<ZergRush.Samples.CustomStruct> other, ZRUpdateFromHelper __helper) 
-    {
-        int i = 0;
-        int oldCount = self.Count;
-        int crossCount = Math.Min(oldCount, other.Count);
-        for (; i < crossCount; ++i)
-        {
-            var __self_i_ = self[i];
-            __self_i_.UpdateFrom(other[i], __helper);
-            self[i] = __self_i_;
-        }
-        for (; i < other.Count; ++i)
-        {
-            ZergRush.Samples.CustomStruct inst = default;
-            inst.UpdateFrom(other[i], __helper);
-            self.Add(inst);
-        }
-        for (; i < oldCount; ++i)
-        {
-            self.RemoveAt(self.Count - 1);
-        }
-    }
-    public static void UpdateFrom(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> other, ZRUpdateFromHelper __helper) 
-    {
-        if (other.Count == 0) { self.Clear(); return; }
-        string[] __keysToRemove = null;
-        int __removeCount = 0;
-        foreach (var __pair in self)
-        {
-            if (!other.ContainsKey(__pair.Key))
-            {
-                __keysToRemove ??= new string[self.Count];
-                __keysToRemove[__removeCount++] = __pair.Key;
-            }
-        }
-        for (int __i = 0; __i < __removeCount; ++__i)
-        {
-            self.Remove(__keysToRemove[__i]);
-        }
-        foreach (var __pair in other)
-        {
-            if (self.TryGetValue(__pair.Key, out var __value))
-            {
-                var ____value = __value;
-                ____value.UpdateFrom(__pair.Value, __helper);
-                __value = ____value;
-            }
-            else
-            {
-                __value.UpdateFrom(__pair.Value, __helper);
-            }
-            self[__pair.Key] = __value;
-        }
-    }
-    public static void UpdateFrom(this System.Collections.Generic.Dictionary<string, int> self, System.Collections.Generic.Dictionary<string, int> other, ZRUpdateFromHelper __helper) 
-    {
-        if (other.Count == 0) { self.Clear(); return; }
-        string[] __keysToRemove = null;
-        int __removeCount = 0;
-        foreach (var __pair in self)
-        {
-            if (!other.ContainsKey(__pair.Key))
-            {
-                __keysToRemove ??= new string[self.Count];
-                __keysToRemove[__removeCount++] = __pair.Key;
-            }
-        }
-        for (int __i = 0; __i < __removeCount; ++__i)
-        {
-            self.Remove(__keysToRemove[__i]);
-        }
-        foreach (var __pair in other)
-        {
-            self[__pair.Key] = __pair.Value;
-        }
-    }
-    public static void Deserialize(this System.Collections.Generic.List<string> self, ZRBinaryReader reader) 
-    {
-        var size = reader.ReadInt32();
-        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
-        self.Capacity = size;
-        for (int i = 0; i < size; i++)
-        {
-            if (!reader.ReadBoolean()) { self.Add(null); continue; }
-            string val = default;
-            val = string.Empty;
-            val = reader.ReadString();
-            self.Add(val);
-        }
-    }
-    public static void Deserialize(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRBinaryReader reader) 
-    {
-        var size = reader.ReadInt32();
-        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
-        self.Capacity = size;
-        for (int i = 0; i < size; i++)
-        {
-            if (!reader.ReadBoolean()) { self.Add(null); continue; }
-            System.Collections.Generic.List<string> val = default;
-            val = new System.Collections.Generic.List<string>();
-            val.Deserialize(reader);
-            self.Add(val);
-        }
-    }
-    public static ZergRush.Samples.CustomStruct ReadZergRush_Samples_CustomStruct(this ZRBinaryReader reader) 
-    {
-        var self = new ZergRush.Samples.CustomStruct();
-        self.id = reader.ReadInt32();
-        if (!reader.ReadBoolean()) {
-            self.name = null;
-        }
-        else { 
-            self.name = reader.ReadString();
-        }
-        return self;
-    }
-    public static void Deserialize(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRBinaryReader reader) 
-    {
-        var size = reader.ReadInt32();
-        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
-        self.Capacity = size;
-        for (int i = 0; i < size; i++)
-        {
-            ZergRush.Samples.CustomStruct val = default;
-            val = reader.ReadZergRush_Samples_CustomStruct();
-            self.Add(val);
-        }
-    }
-    public static void Deserialize(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRBinaryReader reader) 
-    {
-        var size = reader.ReadInt32();
-        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
-        for (int i = 0; i < size; i++)
-        {
-            var key = default(string);
-            key = string.Empty;
-            key = reader.ReadString();
-            var val = default(ZergRush.Samples.CustomStruct);
-            val = reader.ReadZergRush_Samples_CustomStruct();
-            self.Add(key, val);
-        }
-    }
-    public static void Deserialize(this System.Collections.Generic.Dictionary<string, int> self, ZRBinaryReader reader) 
-    {
-        var size = reader.ReadInt32();
-        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
-        for (int i = 0; i < size; i++)
-        {
-            var key = default(string);
-            key = string.Empty;
-            key = reader.ReadString();
-            var val = default(int);
-            val = reader.ReadInt32();
-            self.Add(key, val);
-        }
-    }
-    public static void Serialize(this System.Collections.Generic.List<string> self, ZRBinaryWriter writer) 
-    {
-        writer.Write(self.Count);
-        for (int i = 0; i < self.Count; i++)
-        {
-            if (!(self[i] != null)) writer.Write(false);
-            else {
-                writer.Write(true);
-                writer.Write(self[i]);
-            }
-        }
-    }
-    public static void Serialize(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRBinaryWriter writer) 
-    {
-        writer.Write(self.Count);
-        for (int i = 0; i < self.Count; i++)
-        {
-            if (!(self[i] != null)) writer.Write(false);
-            else {
-                writer.Write(true);
-                self[i].Serialize(writer);
-            }
-        }
-    }
-    public static void Serialize(this ZergRush.Samples.CustomStruct self, ZRBinaryWriter writer) 
-    {
-        writer.Write(self.id);
-        if (!(self.name != null)) writer.Write(false);
-        else {
-            writer.Write(true);
-            writer.Write(self.name);
-        }
-    }
-    public static void Serialize(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRBinaryWriter writer) 
-    {
-        writer.Write(self.Count);
-        for (int i = 0; i < self.Count; i++)
-        {
-            self[i].Serialize(writer);
-        }
-    }
-    public static void Serialize(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRBinaryWriter writer) 
-    {
-        writer.Write(self.Count);
-        foreach (var item in self)
-        {
-            writer.Write(item.Key);
-            item.Value.Serialize(writer);
-        }
-    }
-    public static void Serialize(this System.Collections.Generic.Dictionary<string, int> self, ZRBinaryWriter writer) 
-    {
-        writer.Write(self.Count);
-        foreach (var item in self)
-        {
-            writer.Write(item.Key);
-            writer.Write(item.Value);
-        }
-    }
-    public static ulong CalculateHash(this System.Collections.Generic.List<string> self, ZRHashHelper __helper) 
-    {
-        ulong hash = 345093625;
-        hash ^= (ulong)359440710;
-        hash += hash << 11; hash ^= hash >> 7;
-        var size = self.Count;
-        for (int i = 0; i < size; i++)
-        {
-            hash += self[i] != null ? CodeGenImplTools.CalculateStringHash(self[i]) : 345093625;
-            hash += hash << 11; hash ^= hash >> 7;
-        }
-        return hash;
-    }
-    public static ulong CalculateHash(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRHashHelper __helper) 
-    {
-        ulong hash = 345093625;
-        hash ^= (ulong)359440710;
-        hash += hash << 11; hash ^= hash >> 7;
-        var size = self.Count;
-        for (int i = 0; i < size; i++)
-        {
-            hash += self[i] != null ? self[i].CalculateHash(__helper) : 345093625;
-            hash += hash << 11; hash ^= hash >> 7;
-        }
-        return hash;
-    }
-    public static ulong CalculateHash(this ZergRush.Samples.CustomStruct self, ZRHashHelper __helper) 
-    {
-        ulong hash = 345093625;
-        hash ^= (ulong)1582263992;
-        hash += hash << 11; hash ^= hash >> 7;
-        hash += (ulong)self.id;
-        hash += hash << 11; hash ^= hash >> 7;
-        hash += self.name != null ? CodeGenImplTools.CalculateStringHash(self.name) : 345093625;
-        hash += hash << 11; hash ^= hash >> 7;
-        return hash;
-    }
-    public static ulong CalculateHash(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRHashHelper __helper) 
-    {
-        ulong hash = 345093625;
-        hash ^= (ulong)359440710;
-        hash += hash << 11; hash ^= hash >> 7;
-        var size = self.Count;
-        for (int i = 0; i < size; i++)
-        {
-            hash += self[i].CalculateHash(__helper);
-            hash += hash << 11; hash ^= hash >> 7;
-        }
-        return hash;
-    }
-    public static ulong CalculateHash(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRHashHelper __helper) 
-    {
-        ulong hash = 345093625;
-        hash ^= (ulong)639239793;
-        hash += hash << 11; hash ^= hash >> 7;
-        foreach (var item in self)
-        {
-            hash += item.Key != null ? CodeGenImplTools.CalculateStringHash(item.Key) : 345093625;
-            hash += hash << 11; hash ^= hash >> 7;
-            hash += item.Value.CalculateHash(__helper);
-            hash += hash << 11; hash ^= hash >> 7;
-        }
-        return hash;
-    }
-    public static ulong CalculateHash(this System.Collections.Generic.Dictionary<string, int> self, ZRHashHelper __helper) 
-    {
-        ulong hash = 345093625;
-        hash ^= (ulong)639239793;
-        hash += hash << 11; hash ^= hash >> 7;
-        foreach (var item in self)
-        {
-            hash += item.Key != null ? CodeGenImplTools.CalculateStringHash(item.Key) : 345093625;
-            hash += hash << 11; hash ^= hash >> 7;
-            hash += (ulong)item.Value;
-            hash += hash << 11; hash ^= hash >> 7;
-        }
-        return hash;
-    }
-    public static void CompareCheck(this System.Collections.Generic.List<string> self, System.Collections.Generic.List<string> other, ZRCompareCheckHelper __helper, Action<string> printer) 
-    {
-        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
-        var count = Math.Min(self.Count, other.Count);
-        for (int i = 0; i < count; i++)
-        {
-            if (self[i] != other[i]) CodeGenImplTools.LogCompError(__helper, i.ToString(), printer, other[i], self[i]);
-        }
-    }
-    public static void CompareCheck(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, System.Collections.Generic.List<System.Collections.Generic.List<string>> other, ZRCompareCheckHelper __helper, Action<string> printer) 
-    {
-        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
-        var count = Math.Min(self.Count, other.Count);
-        for (int i = 0; i < count; i++)
-        {
-            if (CodeGenImplTools.CompareNull(__helper, i.ToString(), printer, self[i], other[i])) {
-                __helper.Push(i.ToString());
-                self[i].CompareCheck(other[i], __helper, printer);
-                __helper.Pop();
-            }
-        }
-    }
-    public static void CompareCheck(this ZergRush.Samples.CustomStruct self, ZergRush.Samples.CustomStruct other, ZRCompareCheckHelper __helper, Action<string> printer) 
-    {
-        if (self.id != other.id) CodeGenImplTools.LogCompError(__helper, "id", printer, other.id, self.id);
-        if (self.name != other.name) CodeGenImplTools.LogCompError(__helper, "name", printer, other.name, self.name);
-    }
-    public static void CompareCheck(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, System.Collections.Generic.List<ZergRush.Samples.CustomStruct> other, ZRCompareCheckHelper __helper, Action<string> printer) 
-    {
-        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
-        var count = Math.Min(self.Count, other.Count);
-        for (int i = 0; i < count; i++)
-        {
-            __helper.Push(i.ToString());
-            self[i].CompareCheck(other[i], __helper, printer);
-            __helper.Pop();
-        }
-    }
-    public static void CompareCheck(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> other, ZRCompareCheckHelper __helper, Action<string> printer) 
-    {
-        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
-        foreach (var item in self)
-        {
-            if (!other.TryGetValue(item.Key, out var otherValue))
-            {
-                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)"missing", (object)item.Value);
-            }
-            else
-            {
-                __helper.Push(item.Key.ToString());
-                item.Value.CompareCheck(otherValue, __helper, printer);
-                __helper.Pop();
-            }
-        }
-        foreach (var item in other)
-        {
-            if (!self.ContainsKey(item.Key))
-            {
-                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)item.Value, (object)"missing");
-            }
-        }
-    }
-    public static void CompareCheck(this System.Collections.Generic.Dictionary<string, int> self, System.Collections.Generic.Dictionary<string, int> other, ZRCompareCheckHelper __helper, Action<string> printer) 
-    {
-        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
-        foreach (var item in self)
-        {
-            if (!other.TryGetValue(item.Key, out var otherValue))
-            {
-                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)"missing", (object)item.Value);
-            }
-            else
-            {
-                if (item.Value != otherValue) CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, otherValue, item.Value);
-            }
-        }
-        foreach (var item in other)
-        {
-            if (!self.ContainsKey(item.Key))
-            {
-                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)item.Value, (object)"missing");
-            }
-        }
-    }
-    public static bool ReadFromJson(this System.Collections.Generic.List<string> self, ZRJsonTextReader reader) 
-    {
-        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonToken.EndArray) { break; }
-            if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
-            string val = default;
-            val = string.Empty;
-            val = (string) reader.Value;
-            self.Add(val);
-        }
-        return true;
-    }
-    public static void WriteJson(this System.Collections.Generic.List<string> self, ZRJsonTextWriter writer) 
-    {
-        writer.WriteStartArray();
-        for (int i = 0; i < self.Count; i++)
-        {
-            if (!(self[i] != null))
-            {
-                writer.WriteNull();
-            }
-            else
-            {
-                writer.WriteValue(self[i]);
-            }
-        }
-        writer.WriteEndArray();
-    }
-    public static bool ReadFromJson(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRJsonTextReader reader) 
-    {
-        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonToken.EndArray) { break; }
-            if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
-            System.Collections.Generic.List<string> val = default;
-            val = new System.Collections.Generic.List<string>();
-            val.ReadFromJson(reader);
-            self.Add(val);
-        }
-        return true;
-    }
-    public static void WriteJson(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRJsonTextWriter writer) 
-    {
-        writer.WriteStartArray();
-        for (int i = 0; i < self.Count; i++)
-        {
-            if (!(self[i] != null))
-            {
-                writer.WriteNull();
-            }
-            else
-            {
-                self[i].WriteJson(writer);
-            }
-        }
-        writer.WriteEndArray();
-    }
-    public static ZergRush.Samples.CustomStruct ReadFromJsonZergRush_Samples_CustomStruct(this ZRJsonTextReader reader) 
-    {
-        var self = new ZergRush.Samples.CustomStruct();
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonToken.PropertyName)
-            {
-                var __name = (string) reader.Value;
-                reader.Read();
-                switch(__name)
-                {
-                    case "id":
-                    self.id = (int)(Int64)reader.Value;
-                    break;
-                    case "name":
-                    if (reader.TokenType == JsonToken.Null) {
-                        self.name = null;
-                    }
-                    else { 
-                        self.name = (string) reader.Value;
-                    }
-                    break;
-                }
-            }
-            else if (reader.TokenType == JsonToken.EndObject) { break; }
-        }
-        return self;
-    }
-    public static void WriteJson(this ZergRush.Samples.CustomStruct self, ZRJsonTextWriter writer) 
-    {
-        writer.WriteStartObject();
-        writer.WritePropertyName("id");
-        writer.WriteValue(self.id);
-        if (!(self.name != null))
-        {
-            writer.WritePropertyName("name");
-            writer.WriteNull();
-        }
-        else
-        {
-            writer.WritePropertyName("name");
-            writer.WriteValue(self.name);
-        }
-        writer.WriteEndObject();
-    }
-    public static bool ReadFromJson(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRJsonTextReader reader) 
-    {
-        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonToken.EndArray) { break; }
-            ZergRush.Samples.CustomStruct val = default;
-            val = (ZergRush.Samples.CustomStruct)reader.ReadFromJsonZergRush_Samples_CustomStruct();
-            self.Add(val);
-        }
-        return true;
-    }
-    public static void WriteJson(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRJsonTextWriter writer) 
-    {
-        writer.WriteStartArray();
-        for (int i = 0; i < self.Count; i++)
-        {
-            self[i].WriteJson(writer);
-        }
-        writer.WriteEndArray();
-    }
-    public static bool ReadFromJson(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRJsonTextReader reader) 
-    {
-        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonToken.EndArray) { break; }
-            if (reader.TokenType != JsonToken.StartObject) throw new JsonSerializationException("Bad Json Format");
-            reader.Read();
-            reader.Read();
-            string key = default;
-            key = string.Empty;
-            key = (string) reader.Value;
-            reader.Read();
-            reader.Read();
-            ZergRush.Samples.CustomStruct val = default;
-            val = (ZergRush.Samples.CustomStruct)reader.ReadFromJsonZergRush_Samples_CustomStruct();
-            reader.ReadSkipComments();
-            self.Add(key, val);
-        }
-        return true;
-    }
-    public static void WriteJson(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRJsonTextWriter writer) 
-    {
-        writer.WriteStartArray();
-        foreach (var item in self)
-        {
-            writer.WriteStartObject();
-            writer.WritePropertyName("key");
-            writer.WriteValue(item.Key);
-            writer.WritePropertyName("value");
-            item.Value.WriteJson(writer);
-            writer.WriteEndObject();
-        }
-        writer.WriteEndArray();
-    }
-    public static bool ReadFromJson(this System.Collections.Generic.Dictionary<string, int> self, ZRJsonTextReader reader) 
-    {
-        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonToken.EndArray) { break; }
-            if (reader.TokenType != JsonToken.StartObject) throw new JsonSerializationException("Bad Json Format");
-            reader.Read();
-            reader.Read();
-            string key = default;
-            key = string.Empty;
-            key = (string) reader.Value;
-            reader.Read();
-            reader.Read();
-            int val = default;
-            val = (int)(Int64)reader.Value;
-            reader.ReadSkipComments();
-            self.Add(key, val);
-        }
-        return true;
-    }
-    public static void WriteJson(this System.Collections.Generic.Dictionary<string, int> self, ZRJsonTextWriter writer) 
-    {
-        writer.WriteStartArray();
-        foreach (var item in self)
-        {
-            writer.WriteStartObject();
-            writer.WritePropertyName("key");
-            writer.WriteValue(item.Key);
-            writer.WritePropertyName("value");
-            writer.WriteValue(item.Value);
-            writer.WriteEndObject();
-        }
-        writer.WriteEndArray();
-    }
     public static void UpdateFrom(this System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<System.Collections.Generic.List<string>>> self, System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<System.Collections.Generic.List<string>>> other, ZRUpdateFromHelper __helper) 
     {
         if (other.Count == 0) { self.Clear(); return; }
@@ -2156,6 +1574,56 @@ public static partial class SerializationExtensions
             self[__pair.Key] = __value;
         }
     }
+    public static void UpdateFrom(this System.Collections.Generic.Dictionary<string, int> self, System.Collections.Generic.Dictionary<string, int> other, ZRUpdateFromHelper __helper) 
+    {
+        if (other.Count == 0) { self.Clear(); return; }
+        string[] __keysToRemove = null;
+        int __removeCount = 0;
+        foreach (var __pair in self)
+        {
+            if (!other.ContainsKey(__pair.Key))
+            {
+                __keysToRemove ??= new string[self.Count];
+                __keysToRemove[__removeCount++] = __pair.Key;
+            }
+        }
+        for (int __i = 0; __i < __removeCount; ++__i)
+        {
+            self.Remove(__keysToRemove[__i]);
+        }
+        foreach (var __pair in other)
+        {
+            self[__pair.Key] = __pair.Value;
+        }
+    }
+    public static void Deserialize(this System.Collections.Generic.List<string> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        self.Capacity = size;
+        for (int i = 0; i < size; i++)
+        {
+            if (!reader.ReadBoolean()) { self.Add(null); continue; }
+            string val = default;
+            val = string.Empty;
+            val = reader.ReadString();
+            self.Add(val);
+        }
+    }
+    public static void Deserialize(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        self.Capacity = size;
+        for (int i = 0; i < size; i++)
+        {
+            if (!reader.ReadBoolean()) { self.Add(null); continue; }
+            System.Collections.Generic.List<string> val = default;
+            val = new System.Collections.Generic.List<string>();
+            val.Deserialize(reader);
+            self.Add(val);
+        }
+    }
     public static void Deserialize(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.OtherData> self, ZRBinaryReader reader) 
     {
         var size = reader.ReadInt32();
@@ -2172,6 +1640,44 @@ public static partial class SerializationExtensions
             self.Add(key, val);
         }
     }
+    public static void Deserialize(this System.Collections.Generic.Dictionary<string, int> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        for (int i = 0; i < size; i++)
+        {
+            var key = default(string);
+            key = string.Empty;
+            key = reader.ReadString();
+            var val = default(int);
+            val = reader.ReadInt32();
+            self.Add(key, val);
+        }
+    }
+    public static void Serialize(this System.Collections.Generic.List<string> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                writer.Write(self[i]);
+            }
+        }
+    }
+    public static void Serialize(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                self[i].Serialize(writer);
+            }
+        }
+    }
     public static void Serialize(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.OtherData> self, ZRBinaryWriter writer) 
     {
         writer.Write(self.Count);
@@ -2184,6 +1690,41 @@ public static partial class SerializationExtensions
                 item.Value.Serialize(writer);
             }
         }
+    }
+    public static void Serialize(this System.Collections.Generic.Dictionary<string, int> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        foreach (var item in self)
+        {
+            writer.Write(item.Key);
+            writer.Write(item.Value);
+        }
+    }
+    public static ulong CalculateHash(this System.Collections.Generic.List<string> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)359440710;
+        hash += hash << 11; hash ^= hash >> 7;
+        var size = self.Count;
+        for (int i = 0; i < size; i++)
+        {
+            hash += self[i] != null ? CodeGenImplTools.CalculateStringHash(self[i]) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static ulong CalculateHash(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)359440710;
+        hash += hash << 11; hash ^= hash >> 7;
+        var size = self.Count;
+        for (int i = 0; i < size; i++)
+        {
+            hash += self[i] != null ? self[i].CalculateHash(__helper) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
     }
     public static ulong CalculateHash(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.OtherData> self, ZRHashHelper __helper) 
     {
@@ -2198,6 +1739,42 @@ public static partial class SerializationExtensions
             hash += hash << 11; hash ^= hash >> 7;
         }
         return hash;
+    }
+    public static ulong CalculateHash(this System.Collections.Generic.Dictionary<string, int> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)639239793;
+        hash += hash << 11; hash ^= hash >> 7;
+        foreach (var item in self)
+        {
+            hash += item.Key != null ? CodeGenImplTools.CalculateStringHash(item.Key) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+            hash += (ulong)item.Value;
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static void CompareCheck(this System.Collections.Generic.List<string> self, System.Collections.Generic.List<string> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        var count = Math.Min(self.Count, other.Count);
+        for (int i = 0; i < count; i++)
+        {
+            if (self[i] != other[i]) CodeGenImplTools.LogCompError(__helper, i.ToString(), printer, other[i], self[i]);
+        }
+    }
+    public static void CompareCheck(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, System.Collections.Generic.List<System.Collections.Generic.List<string>> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        var count = Math.Min(self.Count, other.Count);
+        for (int i = 0; i < count; i++)
+        {
+            if (CodeGenImplTools.CompareNull(__helper, i.ToString(), printer, self[i], other[i])) {
+                __helper.Push(i.ToString());
+                self[i].CompareCheck(other[i], __helper, printer);
+                __helper.Pop();
+            }
+        }
     }
     public static void CompareCheck(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.OtherData> self, System.Collections.Generic.Dictionary<string, ZergRush.Samples.OtherData> other, ZRCompareCheckHelper __helper, Action<string> printer) 
     {
@@ -2224,6 +1801,88 @@ public static partial class SerializationExtensions
                 CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)item.Value, (object)"missing");
             }
         }
+    }
+    public static void CompareCheck(this System.Collections.Generic.Dictionary<string, int> self, System.Collections.Generic.Dictionary<string, int> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        foreach (var item in self)
+        {
+            if (!other.TryGetValue(item.Key, out var otherValue))
+            {
+                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)"missing", (object)item.Value);
+            }
+            else
+            {
+                if (item.Value != otherValue) CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, otherValue, item.Value);
+            }
+        }
+        foreach (var item in other)
+        {
+            if (!self.ContainsKey(item.Key))
+            {
+                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)item.Value, (object)"missing");
+            }
+        }
+    }
+    public static bool ReadFromJson(this System.Collections.Generic.List<string> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
+            string val = default;
+            val = string.Empty;
+            val = (string) reader.Value;
+            self.Add(val);
+        }
+        return true;
+    }
+    public static void WriteJson(this System.Collections.Generic.List<string> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                writer.WriteValue(self[i]);
+            }
+        }
+        writer.WriteEndArray();
+    }
+    public static bool ReadFromJson(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
+            System.Collections.Generic.List<string> val = default;
+            val = new System.Collections.Generic.List<string>();
+            val.ReadFromJson(reader);
+            self.Add(val);
+        }
+        return true;
+    }
+    public static void WriteJson(this System.Collections.Generic.List<System.Collections.Generic.List<string>> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                self[i].WriteJson(writer);
+            }
+        }
+        writer.WriteEndArray();
     }
     public static bool ReadFromJson(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.OtherData> self, ZRJsonTextReader reader) 
     {
@@ -2257,6 +1916,41 @@ public static partial class SerializationExtensions
             writer.WriteValue(item.Key);
             writer.WritePropertyName("value");
             item.Value.WriteJson(writer);
+            writer.WriteEndObject();
+        }
+        writer.WriteEndArray();
+    }
+    public static bool ReadFromJson(this System.Collections.Generic.Dictionary<string, int> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            if (reader.TokenType != JsonToken.StartObject) throw new JsonSerializationException("Bad Json Format");
+            reader.Read();
+            reader.Read();
+            string key = default;
+            key = string.Empty;
+            key = (string) reader.Value;
+            reader.Read();
+            reader.Read();
+            int val = default;
+            val = (int)(Int64)reader.Value;
+            reader.ReadSkipComments();
+            self.Add(key, val);
+        }
+        return true;
+    }
+    public static void WriteJson(this System.Collections.Generic.Dictionary<string, int> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        foreach (var item in self)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("key");
+            writer.WriteValue(item.Key);
+            writer.WritePropertyName("value");
+            writer.WriteValue(item.Value);
             writer.WriteEndObject();
         }
         writer.WriteEndArray();
@@ -2304,6 +1998,312 @@ public static partial class SerializationExtensions
             }
             self[__pair.Key] = __value;
         }
+    }
+    public static void UpdateFrom(ref this ZergRush.Samples.CustomStruct self, ZergRush.Samples.CustomStruct other, ZRUpdateFromHelper __helper) 
+    {
+        self.id = other.id;
+        self.name = other.name;
+    }
+    public static void UpdateFrom(this ZergRush.ReactiveCore.Cell<ZergRush.Samples.CustomStruct> self, ZergRush.ReactiveCore.Cell<ZergRush.Samples.CustomStruct> other, ZRUpdateFromHelper __helper) 
+    {
+
+    }
+    public static void UpdateFrom(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, System.Collections.Generic.List<ZergRush.Samples.CustomStruct> other, ZRUpdateFromHelper __helper) 
+    {
+        int i = 0;
+        int oldCount = self.Count;
+        int crossCount = Math.Min(oldCount, other.Count);
+        for (; i < crossCount; ++i)
+        {
+            var __self_i_ = self[i];
+            __self_i_.UpdateFrom(other[i], __helper);
+            self[i] = __self_i_;
+        }
+        for (; i < other.Count; ++i)
+        {
+            ZergRush.Samples.CustomStruct inst = default;
+            inst.UpdateFrom(other[i], __helper);
+            self.Add(inst);
+        }
+        for (; i < oldCount; ++i)
+        {
+            self.RemoveAt(self.Count - 1);
+        }
+    }
+    public static void UpdateFrom(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> other, ZRUpdateFromHelper __helper) 
+    {
+        if (other.Count == 0) { self.Clear(); return; }
+        string[] __keysToRemove = null;
+        int __removeCount = 0;
+        foreach (var __pair in self)
+        {
+            if (!other.ContainsKey(__pair.Key))
+            {
+                __keysToRemove ??= new string[self.Count];
+                __keysToRemove[__removeCount++] = __pair.Key;
+            }
+        }
+        for (int __i = 0; __i < __removeCount; ++__i)
+        {
+            self.Remove(__keysToRemove[__i]);
+        }
+        foreach (var __pair in other)
+        {
+            if (self.TryGetValue(__pair.Key, out var __value))
+            {
+                var ____value = __value;
+                ____value.UpdateFrom(__pair.Value, __helper);
+                __value = ____value;
+            }
+            else
+            {
+                __value.UpdateFrom(__pair.Value, __helper);
+            }
+            self[__pair.Key] = __value;
+        }
+    }
+    public static ZergRush.Samples.CustomStruct ReadZergRush_Samples_CustomStruct(this ZRBinaryReader reader) 
+    {
+        var self = new ZergRush.Samples.CustomStruct();
+        self.id = reader.ReadInt32();
+        if (!reader.ReadBoolean()) {
+            self.name = null;
+        }
+        else { 
+            self.name = reader.ReadString();
+        }
+        return self;
+    }
+    public static void Deserialize(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        self.Capacity = size;
+        for (int i = 0; i < size; i++)
+        {
+            ZergRush.Samples.CustomStruct val = default;
+            val = reader.ReadZergRush_Samples_CustomStruct();
+            self.Add(val);
+        }
+    }
+    public static void Deserialize(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        for (int i = 0; i < size; i++)
+        {
+            var key = default(string);
+            key = string.Empty;
+            key = reader.ReadString();
+            var val = default(ZergRush.Samples.CustomStruct);
+            val = reader.ReadZergRush_Samples_CustomStruct();
+            self.Add(key, val);
+        }
+    }
+    public static void Serialize(this ZergRush.Samples.CustomStruct self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.id);
+        if (!(self.name != null)) writer.Write(false);
+        else {
+            writer.Write(true);
+            writer.Write(self.name);
+        }
+    }
+    public static void Serialize(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            self[i].Serialize(writer);
+        }
+    }
+    public static void Serialize(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        foreach (var item in self)
+        {
+            writer.Write(item.Key);
+            item.Value.Serialize(writer);
+        }
+    }
+    public static ulong CalculateHash(this ZergRush.Samples.CustomStruct self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)1582263992;
+        hash += hash << 11; hash ^= hash >> 7;
+        hash += (ulong)self.id;
+        hash += hash << 11; hash ^= hash >> 7;
+        hash += self.name != null ? CodeGenImplTools.CalculateStringHash(self.name) : 345093625;
+        hash += hash << 11; hash ^= hash >> 7;
+        return hash;
+    }
+    public static ulong CalculateHash(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)359440710;
+        hash += hash << 11; hash ^= hash >> 7;
+        var size = self.Count;
+        for (int i = 0; i < size; i++)
+        {
+            hash += self[i].CalculateHash(__helper);
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static ulong CalculateHash(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)639239793;
+        hash += hash << 11; hash ^= hash >> 7;
+        foreach (var item in self)
+        {
+            hash += item.Key != null ? CodeGenImplTools.CalculateStringHash(item.Key) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+            hash += item.Value.CalculateHash(__helper);
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static void CompareCheck(this ZergRush.Samples.CustomStruct self, ZergRush.Samples.CustomStruct other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.id != other.id) CodeGenImplTools.LogCompError(__helper, "id", printer, other.id, self.id);
+        if (self.name != other.name) CodeGenImplTools.LogCompError(__helper, "name", printer, other.name, self.name);
+    }
+    public static void CompareCheck(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, System.Collections.Generic.List<ZergRush.Samples.CustomStruct> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        var count = Math.Min(self.Count, other.Count);
+        for (int i = 0; i < count; i++)
+        {
+            __helper.Push(i.ToString());
+            self[i].CompareCheck(other[i], __helper, printer);
+            __helper.Pop();
+        }
+    }
+    public static void CompareCheck(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        foreach (var item in self)
+        {
+            if (!other.TryGetValue(item.Key, out var otherValue))
+            {
+                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)"missing", (object)item.Value);
+            }
+            else
+            {
+                __helper.Push(item.Key.ToString());
+                item.Value.CompareCheck(otherValue, __helper, printer);
+                __helper.Pop();
+            }
+        }
+        foreach (var item in other)
+        {
+            if (!self.ContainsKey(item.Key))
+            {
+                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)item.Value, (object)"missing");
+            }
+        }
+    }
+    public static ZergRush.Samples.CustomStruct ReadFromJsonZergRush_Samples_CustomStruct(this ZRJsonTextReader reader) 
+    {
+        var self = new ZergRush.Samples.CustomStruct();
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.PropertyName)
+            {
+                var __name = (string) reader.Value;
+                reader.Read();
+                switch(__name)
+                {
+                    case "id":
+                    self.id = (int)(Int64)reader.Value;
+                    break;
+                    case "name":
+                    if (reader.TokenType == JsonToken.Null) {
+                        self.name = null;
+                    }
+                    else { 
+                        self.name = (string) reader.Value;
+                    }
+                    break;
+                }
+            }
+            else if (reader.TokenType == JsonToken.EndObject) { break; }
+        }
+        return self;
+    }
+    public static void WriteJson(this ZergRush.Samples.CustomStruct self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartObject();
+        writer.WritePropertyName("id");
+        writer.WriteValue(self.id);
+        if (!(self.name != null))
+        {
+            writer.WritePropertyName("name");
+            writer.WriteNull();
+        }
+        else
+        {
+            writer.WritePropertyName("name");
+            writer.WriteValue(self.name);
+        }
+        writer.WriteEndObject();
+    }
+    public static bool ReadFromJson(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            ZergRush.Samples.CustomStruct val = default;
+            val = (ZergRush.Samples.CustomStruct)reader.ReadFromJsonZergRush_Samples_CustomStruct();
+            self.Add(val);
+        }
+        return true;
+    }
+    public static void WriteJson(this System.Collections.Generic.List<ZergRush.Samples.CustomStruct> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            self[i].WriteJson(writer);
+        }
+        writer.WriteEndArray();
+    }
+    public static bool ReadFromJson(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            if (reader.TokenType != JsonToken.StartObject) throw new JsonSerializationException("Bad Json Format");
+            reader.Read();
+            reader.Read();
+            string key = default;
+            key = string.Empty;
+            key = (string) reader.Value;
+            reader.Read();
+            reader.Read();
+            ZergRush.Samples.CustomStruct val = default;
+            val = (ZergRush.Samples.CustomStruct)reader.ReadFromJsonZergRush_Samples_CustomStruct();
+            reader.ReadSkipComments();
+            self.Add(key, val);
+        }
+        return true;
+    }
+    public static void WriteJson(this System.Collections.Generic.Dictionary<string, ZergRush.Samples.CustomStruct> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        foreach (var item in self)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("key");
+            writer.WriteValue(item.Key);
+            writer.WritePropertyName("value");
+            item.Value.WriteJson(writer);
+            writer.WriteEndObject();
+        }
+        writer.WriteEndArray();
     }
 }
 #endif

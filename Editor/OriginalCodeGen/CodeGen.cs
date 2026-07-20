@@ -320,8 +320,14 @@ namespace ZergRush.CodeGen
             string args,
             bool disablebleFirstArg = false)
         {
+            return MakeGenMethod(GenClassSink(type), type, currTask, funcName, returnType, args,
+                disablebleFirstArg);
+        }
+
+        public static MethodBuilder MakeGenMethod(SharpClassBuilder classSink, Type type, GenTaskFlags currTask,
+            string funcName, Type returnType, string args, bool disablebleFirstArg = false)
+        {
             bool controllable = type.IsControllable();
-            var classSink = GenClassSink(type);
 
             var mode = controllable ? Mode.PartialClass : Mode.ExtensionMethod;
 
@@ -419,6 +425,12 @@ namespace ZergRush.CodeGen
 
         public static void RawGen(IEnumerable<Type> types, string defaultPath)
         {
+            RawGen(types, defaultPath, null, true, true);
+        }
+
+        internal static void RawGen(IEnumerable<Type> types, string defaultPath, Action? customGeneration,
+            bool generateBuiltInTasks, bool cleanOutputDirectories)
+        {
             var priorityList = types
                 .Select(t =>
                 {
@@ -467,62 +479,74 @@ namespace ZergRush.CodeGen
 
             foreach (var typeAndPriority in priorityList)
             {
+                RegisterTypeContext(typeAndPriority.t, null);
+            }
+
+            customGeneration?.Invoke();
+
+            foreach (var typeAndPriority in priorityList)
+            {
                 var typeInAssembly = typeAndPriority.t;
 
-                RegisterTypeContext(typeInAssembly, null);
-                var readGenFlags = typeInAssembly.ReadGenFlags();
-                if (readGenFlags != GenTaskFlags.None)
+                if (generateBuiltInTasks)
                 {
-                    RequestGen(typeInAssembly, null, readGenFlags, true);
-                }
-
-                while (tasks.Count > 0)
-                {
-                    var task = tasks.Dequeue();
-                    var type = task.type;
-
-                    if (type.IsLivableList() && type.IsConstructedGenericType == false) continue;
-                    if (type.HasAttribute<DoNotGen>()) continue;
-
-                    var classSink = GenClassSink(task.type);
-                    classSink.indent++;
-
-                    void CheckFlag(GenTaskFlags flag, Action<string> gen)
+                    var readGenFlags = typeInAssembly.ReadGenFlags();
+                    if (readGenFlags != GenTaskFlags.None)
                     {
-                        if ((task.flags & flag) == 0) return;
-
-                        var isCustom = false;
-                        var needGenBase = false;
-                        var customImpl = type.GetCustomImplAttr();
-                        if (customImpl != null && (customImpl.flags & flag) != 0)
-                        {
-                            isCustom = true;
-                            needGenBase = customImpl.genBaseMethods;
-                        }
-
-                        if (isCustom && needGenBase == false) return;
-                        gen(isCustom ? "Base" : "");
+                        RequestGen(typeInAssembly, null, readGenFlags, true);
                     }
-
-                    CheckFlag(GenTaskFlags.UpdateFrom, funcPrefix => GenUpdateFrom(type, false, funcPrefix));
-                    CheckFlag(GenTaskFlags.Deserialize, funcPrefix => GenerateDeserialize(type, false, funcPrefix));
-                    CheckFlag(GenTaskFlags.Serialize, funcPrefix => GenerateSerialize(type, funcPrefix));
-                    CheckFlag(GenTaskFlags.Hash, funcPrefix => GenHashing(type, funcPrefix));
-                    CheckFlag(GenTaskFlags.UIDGen, funcPrefix => GenUIDFunc(type, funcPrefix));
-                    CheckFlag(GenTaskFlags.CollectConfigs, funcPrefix => GenCollectConfigs(type, funcPrefix));
-                    CheckFlag(GenTaskFlags.LifeSupport, funcPrefix => GenerateLivable(type, funcPrefix));
-                    CheckFlag(GenTaskFlags.OwnershipHierarchy, funcPrefix => GenerateHierarchyAndId(type, funcPrefix));
-                    CheckFlag(GenTaskFlags.OwnershipHierarchy, _ => GenerateConstructionFromRoot(type));
-                    CheckFlag(GenTaskFlags.DefaultConstructor, funcPrefix => GenerateConstructor(type, funcPrefix));
-                    CheckFlag(GenTaskFlags.CompareChech, funcPrefix => GenerateComparisonFunc(type, funcPrefix));
-                    CheckFlag(GenTaskFlags.JsonSerialization, funcPrefix => GenerateJsonSerialization(type, funcPrefix));
-                    classSink.indent--;
                 }
             }
 
-            AddMultiRefInterfaces();
-            GenerateFieldWrappers();
-            GeneratePolymorphismSupport();
+            while (tasks.Count > 0)
+            {
+                var task = tasks.Dequeue();
+                var type = task.type;
+
+                if (type.IsLivableList() && type.IsConstructedGenericType == false) continue;
+                if (type.HasAttribute<DoNotGen>()) continue;
+
+                var classSink = GenClassSink(task.type);
+                classSink.indent++;
+
+                void CheckFlag(GenTaskFlags flag, Action<string> gen)
+                {
+                    if ((task.flags & flag) == 0) return;
+
+                    var isCustom = false;
+                    var needGenBase = false;
+                    var customImpl = type.GetCustomImplAttr();
+                    if (customImpl != null && (customImpl.flags & flag) != 0)
+                    {
+                        isCustom = true;
+                        needGenBase = customImpl.genBaseMethods;
+                    }
+
+                    if (isCustom && needGenBase == false) return;
+                    gen(isCustom ? "Base" : "");
+                }
+
+                CheckFlag(GenTaskFlags.UpdateFrom, funcPrefix => GenUpdateFrom(type, false, funcPrefix));
+                CheckFlag(GenTaskFlags.Deserialize, funcPrefix => GenerateDeserialize(type, false, funcPrefix));
+                CheckFlag(GenTaskFlags.Serialize, funcPrefix => GenerateSerialize(type, funcPrefix));
+                CheckFlag(GenTaskFlags.Hash, funcPrefix => GenHashing(type, funcPrefix));
+                CheckFlag(GenTaskFlags.UIDGen, funcPrefix => GenUIDFunc(type, funcPrefix));
+                CheckFlag(GenTaskFlags.CollectConfigs, funcPrefix => GenCollectConfigs(type, funcPrefix));
+                CheckFlag(GenTaskFlags.LifeSupport, funcPrefix => GenerateLivable(type, funcPrefix));
+                CheckFlag(GenTaskFlags.OwnershipHierarchy, funcPrefix => GenerateHierarchyAndId(type, funcPrefix));
+                CheckFlag(GenTaskFlags.OwnershipHierarchy, _ => GenerateConstructionFromRoot(type));
+                CheckFlag(GenTaskFlags.DefaultConstructor, funcPrefix => GenerateConstructor(type, funcPrefix));
+                CheckFlag(GenTaskFlags.CompareChech, funcPrefix => GenerateComparisonFunc(type, funcPrefix));
+                CheckFlag(GenTaskFlags.JsonSerialization, funcPrefix => GenerateJsonSerialization(type, funcPrefix));
+                classSink.indent--;
+            }
+
+            if (generateBuiltInTasks || typeGenRequested.Count > 0)
+            {
+                AddMultiRefInterfaces();
+                GenerateFieldWrappers();
+                GeneratePolymorphismSupport();
+            }
             if (hasErrors)
             {
                 global::ZergRush.LogSink.errLog("error occured");
@@ -531,6 +555,7 @@ namespace ZergRush.CodeGen
 
             customContextFolders.ForEach(genFolder =>
             {
+                if (!cleanOutputDirectories) return;
                 if (Directory.Exists(genFolder) == false)
                 {
                     Directory.CreateDirectory(genFolder);

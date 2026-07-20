@@ -19,6 +19,17 @@ namespace ZergRush.CodeGen
             return member.GetAttributeInfo<T>() != null;
         }
 
+        public static bool HasAttribute<T>(this ZRMethod? method) where T : Attribute
+        {
+            return method?.Attributes.Any(AttributeNameMatches<T>) == true;
+        }
+
+        public static T? GetAttribute<T>(this ZRMethod? method) where T : Attribute
+        {
+            var info = method?.Attributes.FirstOrDefault(AttributeNameMatches<T>);
+            return info == null ? null : CreateAttribute<T>(info);
+        }
+
         public static bool HasAttributeName(this ZRMember? member, string attributeName)
         {
             return member?.Attributes.Any(attribute => AttributeNameMatches(attribute, attributeName)) == true;
@@ -100,7 +111,6 @@ namespace ZergRush.CodeGen
             {
                 return systemBaseType.IsAssignableFrom(resolved);
             }
-
             if (type.BaseType.IsAssignableTo(systemBaseType)) return true;
             return type.Interfaces.Any(interfaceType => interfaceType.IsAssignableTo(systemBaseType));
         }
@@ -177,6 +187,15 @@ namespace ZergRush.CodeGen
             return type.IsAssignableTo(typeof(LoadableConfig));
         }
 
+        public static bool IsDataNode(this ZRType? type)
+        {
+            for (var current = type; current != null; current = current.BaseType)
+            {
+                if (current.Name == "DataNode") return true;
+            }
+            return false;
+        }
+
         public static ZRType? NullableUnderlyingType(this ZRType? type)
         {
             return type?.CommonConstruct == ZRCommonConstruct.Nullable ? type.FirstGenericArg() : null;
@@ -232,6 +251,12 @@ namespace ZergRush.CodeGen
                 yield return parent;
                 parent = parent.BaseType;
             }
+        }
+
+        public static IEnumerable<ZRType> ParentsAndSelf(this ZRType? type)
+        {
+            for (var current = type; current != null; current = current.BaseType)
+                yield return current;
         }
 
         public static ZRType? ParentWithTag<T>(this ZRType type) where T : Attribute

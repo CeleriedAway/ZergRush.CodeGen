@@ -193,6 +193,30 @@ public sealed class CodeGenSamplesParserTests
         Assert.Contains("does not satisfy the generic constraints", constraint.Message);
     }
 
+    [Fact]
+    public void Directory_inputs_ignore_existing_generated_sources()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"ZergRushParserDirectoryTests_{Guid.NewGuid():N}");
+        var generated = Path.Combine(root, "x_generated");
+        Directory.CreateDirectory(generated);
+        File.WriteAllText(Path.Combine(root, "Source.cs"), "public class SourceType {}");
+        File.WriteAllText(Path.Combine(root, "Old.gen.cs"), "public class OldGeneratedType {}");
+        File.WriteAllText(Path.Combine(root, "Old.enum.cs"), "public enum OldGeneratedEnum {}");
+        File.WriteAllText(Path.Combine(generated, "Nested.cs"), "public class NestedGeneratedType {}");
+
+        try
+        {
+            var types = new ZRCodeParser().ParseInputs([root]);
+
+            Assert.Contains(types, type => type.FullName == "SourceType");
+            Assert.DoesNotContain(types, type => type.FullName.Contains("Generated", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     static IReadOnlyList<ZRType> ParseCodeGenSamples()
     {
         var parser = new ZRCodeParser();

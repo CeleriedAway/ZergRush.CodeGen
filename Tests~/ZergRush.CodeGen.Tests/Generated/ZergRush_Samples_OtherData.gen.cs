@@ -31,6 +31,10 @@ namespace ZergRush.Samples {
             hash += hash << 11; hash ^= hash >> 7;
             return hash;
         }
+        public  OtherData() 
+        {
+
+        }
         public virtual void CompareCheck(ZergRush.Samples.OtherData other, ZRCompareCheckHelper __helper, Action<string> printer) 
         {
             if (someData != other.someData) CodeGenImplTools.LogCompError(__helper, "someData", printer, other.someData, someData);
@@ -50,10 +54,6 @@ namespace ZergRush.Samples {
         {
             writer.WritePropertyName("someData");
             writer.WriteValue(someData);
-        }
-        public  OtherData() 
-        {
-
         }
     }
 }

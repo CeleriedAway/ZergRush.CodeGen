@@ -49,6 +49,10 @@ namespace ZergRush.Samples {
             hash += hash << 11; hash ^= hash >> 7;
             return hash;
         }
+        public  TestPolyGenericParent() 
+        {
+
+        }
         public virtual void CompareCheck(ZergRush.Samples.TestPolyGenericParent other, ZRCompareCheckHelper __helper, Action<string> printer) 
         {
             if (intField != other.intField) CodeGenImplTools.LogCompError(__helper, "intField", printer, other.intField, intField);
@@ -68,10 +72,6 @@ namespace ZergRush.Samples {
         {
             writer.WritePropertyName("intField");
             writer.WriteValue(intField);
-        }
-        public  TestPolyGenericParent() 
-        {
-
         }
         public virtual ushort GetClassId() 
         {

@@ -168,7 +168,12 @@ public sealed class ZRCodeParser
     {
         var normalized = path.Replace('\\', '/');
         return normalized.Contains("/bin/", StringComparison.OrdinalIgnoreCase) ||
-               normalized.Contains("/obj/", StringComparison.OrdinalIgnoreCase);
+               normalized.Contains("/obj/", StringComparison.OrdinalIgnoreCase) ||
+               normalized.Contains("/x_generated/", StringComparison.OrdinalIgnoreCase) ||
+               normalized.Contains("/zGenerated/", StringComparison.OrdinalIgnoreCase) ||
+               normalized.Contains("/ZergRushGenerated/", StringComparison.OrdinalIgnoreCase) ||
+               normalized.EndsWith(".gen.cs", StringComparison.OrdinalIgnoreCase) ||
+               normalized.EndsWith(".enum.cs", StringComparison.OrdinalIgnoreCase);
     }
 
     static IEnumerable<MetadataReference> DefaultReferences()
@@ -598,11 +603,16 @@ public sealed class ZRCodeParser
         return new ZRMethod
         {
             Name = method.Identifier.Text,
+            DeclaringType = owner,
+            ReturnType = symbol != null ? TypeFromSymbol(symbol.ReturnType) : TypeFromSyntax(method.ReturnType, model),
             IsAbstract = method.Modifiers.Any(SyntaxKind.AbstractKeyword) || symbol?.IsAbstract == true,
             IsVirtual = method.Modifiers.Any(SyntaxKind.VirtualKeyword) ||
                         method.Modifiers.Any(SyntaxKind.OverrideKeyword) ||
                         symbol?.IsVirtual == true ||
                         symbol?.IsOverride == true,
+            IsStatic = method.Modifiers.Any(SyntaxKind.StaticKeyword) || symbol?.IsStatic == true,
+            Visibility = VisibilityFromSymbol(symbol?.DeclaredAccessibility),
+            Attributes = ReadAttributes(symbol, method.AttributeLists, model),
             Parameters = method.ParameterList.Parameters.Select(parameter =>
             {
                 var parameterSymbol = model.GetDeclaredSymbol(parameter) as IParameterSymbol;
@@ -615,7 +625,12 @@ public sealed class ZRCodeParser
                 return new ZRParameter
                 {
                     Name = parameter.Identifier.Text,
-                    ParameterType = parameterType
+                    ParameterType = parameterType,
+                    HasDefaultValue = parameter.Default != null,
+                    DefaultValue = parameter.Default == null
+                        ? null
+                        : model.GetConstantValue(parameter.Default.Value).Value,
+                    Attributes = ReadAttributes(parameterSymbol, parameter.AttributeLists, model)
                 };
             }).ToList()
         };
