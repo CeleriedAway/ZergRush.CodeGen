@@ -7,4 +7,9 @@
     <RepositoryUrl>https://github.com/CeleriedAway/ZergRush</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(ZergRushUnityBuildRoot)' != ''">
+    <BaseOutputPath>$(ZergRushUnityBuildRoot)\bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(ZergRushUnityBuildRoot)\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(ZergRushUnityBuildRoot)\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
 </Project>
