@@ -13,6 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Tools~\ZergRush.CodeGen\**\*.cs" />
-    <Compile Include="..\..\Editor\OriginalCodeGen\**\*.cs" />
+    <Compile Include="..\..\Editor\**\*.cs" />
   </ItemGroup>
 </Project>
