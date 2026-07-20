@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 
 namespace ZergRush
@@ -15,7 +14,7 @@ namespace ZergRush
         {
         }
 
-        public ZRBinaryWriter([NotNull] Stream output) : base(output)
+        public ZRBinaryWriter(Stream output) : base(output)
         {
         }
 

@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 using ZergRush.CodeGen;
 
@@ -21,7 +20,7 @@ namespace ZergRush.ReactiveCore
         protected List<TModification> modifications = new List<TModification>();
         EventStream<TVal> changed = new EventStream<TVal>();
         
-        [GenInclude, CodeGen.CanBeNull, JetBrains.Annotations.CanBeNull]
+        [GenInclude, CodeGen.CanBeNull]
         public TVal baseValue
         {
             get { return baseVal; }
@@ -226,7 +225,6 @@ namespace ZergRush.ReactiveCore
         
         ReactiveCollection<T> collection = new ReactiveCollection<T>();
         Func<T, int> orderPredicate;
-        [MustUseReturnValue]
         public IDisposable ModifyAdd(T elem)
         {
             collection.InsertSorted(elem, orderPredicate);
@@ -287,7 +285,6 @@ namespace ZergRush.ReactiveCore
             that why it is the 'ref'
             so please save the priority you got
         */
-        [MustUseReturnValue]
         public IDisposable ModifyAdd(T elem, ref int priority)
         {
             if (priority != 0)
