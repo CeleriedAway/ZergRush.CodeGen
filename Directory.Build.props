@@ -8,6 +8,10 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   <PropertyGroup Condition="'$(ZergRushUnityBuildRoot)' != ''">
+    <!-- BaseIntermediateOutputPath normally supplies the SDK's obj exclusion.
+         When Unity redirects it, retain explicit exclusions for local artifacts
+         left by regular dotnet builds. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)\bin\**\*;$(MSBuildProjectDirectory)\obj\**\*</DefaultItemExcludes>
     <BaseOutputPath>$(ZergRushUnityBuildRoot)\bin\$(MSBuildProjectName)\</BaseOutputPath>
     <BaseIntermediateOutputPath>$(ZergRushUnityBuildRoot)\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <MSBuildProjectExtensionsPath>$(ZergRushUnityBuildRoot)\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
