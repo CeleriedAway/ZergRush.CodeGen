@@ -1,0 +1,19 @@
+{
+  "name": "ZergRush.CodeGen",
+  "rootNamespace": "",
+  "references": [
+    "ZergRush.CodeGen.Abstractions",
+    "Newtonsoft.Json"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}
