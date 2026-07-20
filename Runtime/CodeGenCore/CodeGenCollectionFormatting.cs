@@ -45,7 +45,7 @@ namespace ZergRush.CodeGen
             return index;
         }
 
-        public static void EnsureSize<T>(this List<T> list, int count) where T : new()
+        internal static void EnsureSize<T>(this List<T> list, int count) where T : new()
         {
             while (list.Count < count)
             {
