@@ -26,6 +26,20 @@ namespace ZergRush.CodeGen
             return HasGenericBaseNamed(type, "LivableSlot`1");
         }
 
+        public static bool IsConfig(this Type type)
+        {
+            return type != null && typeof(ZergRush.Alive.LoadableConfig).IsAssignableFrom(type);
+        }
+
+        public static bool IsDataNode(this Type type)
+        {
+            for (var current = type; current != null; current = current.BaseType)
+            {
+                if (current.Name == "DataNode") return true;
+            }
+            return false;
+        }
+
         static bool HasGenericBaseNamed(Type type, string metadataName)
         {
             for (var current = type; current != null; current = current.BaseType)
