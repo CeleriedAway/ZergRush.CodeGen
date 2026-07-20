@@ -152,7 +152,7 @@ namespace ZergRush.CodeGen
             }
             catch (Exception e)
             {
-                LogSink.errLog?.Invoke("saving type table exception " + e.Message);
+                global::ZergRush.LogSink.errLog?.Invoke("saving type table exception " + e.Message);
             }
         }
 

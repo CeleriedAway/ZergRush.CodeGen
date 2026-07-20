@@ -27,7 +27,7 @@ namespace ZergRush.CodeGen
         public static void Error(string err)
         {
             hasErrors = true;
-            LogSink.errLog?.Invoke(err);
+            global::ZergRush.LogSink.errLog?.Invoke(err);
         }
 
         enum Mode
@@ -525,7 +525,7 @@ namespace ZergRush.CodeGen
             GeneratePolymorphismSupport();
             if (hasErrors)
             {
-                LogSink.errLog("error occured");
+                global::ZergRush.LogSink.errLog("error occured");
                 return;
             }
 
@@ -549,7 +549,7 @@ namespace ZergRush.CodeGen
                 context.Commit();
             }
 
-            LogSink.log("codegen complete");
+            global::ZergRush.LogSink.log("codegen complete");
         }
     }
 }

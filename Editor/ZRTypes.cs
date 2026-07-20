@@ -356,7 +356,8 @@ public class ZRType
             var arguments = GetGenericArguments();
             var systemArguments = systemType.GetGenericArguments();
             return arguments.Length == systemArguments.Length &&
-                   arguments.Zip(systemArguments).All(pair => pair.First.MatchesSystemType(pair.Second));
+                   arguments.Zip(systemArguments, (argument, systemArgument) =>
+                       argument.MatchesSystemType(systemArgument)).All(matches => matches);
         }
 
         return MatchesSystemTypeIdentity(this, systemType);
