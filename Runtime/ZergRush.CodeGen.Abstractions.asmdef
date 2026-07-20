@@ -1,0 +1,17 @@
+{
+  "name": "ZergRush.CodeGen.Abstractions",
+  "rootNamespace": "",
+  "references": [
+    "ZergRush.Reactive",
+    "Newtonsoft.Json"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}
