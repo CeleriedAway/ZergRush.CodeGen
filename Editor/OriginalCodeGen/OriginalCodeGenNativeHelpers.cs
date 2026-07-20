@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ZergRush.CodeGen
 {
-    public static class OriginalCodeGenNativeHelpers
+    internal static class OriginalCodeGenNativeHelpers
     {
         public static bool Valid(this string value)
         {
