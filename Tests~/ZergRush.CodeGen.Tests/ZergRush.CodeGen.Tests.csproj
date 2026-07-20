@@ -37,7 +37,7 @@
   <Target Name="GenerateCodeGenSamples" BeforeTargets="CoreCompile" DependsOnTargets="ResolveProjectReferences">
     <RemoveDir Directories="$(GeneratedCodeDir)" />
     <MakeDir Directories="$(GeneratedCodeDir)" />
-    <Exec Command="dotnet &quot;$(MSBuildProjectDirectory)\..\..\src\ZergRush.CodeGen.Cli\bin\$(Configuration)\net10.0\ZergRush.CodeGen.Cli.dll&quot; --generate &quot;$(GeneratedCodeDir)&quot; &quot;$(CodeGenSamplesFile)&quot; &quot;$(CoverageSamplesFile)&quot; &quot;$(DictionarySamplesFile)&quot; &quot;$(UnityStubsFile)&quot;" />
+    <Exec Command="dotnet &quot;$(MSBuildProjectDirectory)\..\..\src\ZergRush.CodeGen.Cli\bin\$(Configuration)\net10.0\ZergRush.CodeGen.Cli.dll&quot; --generate &quot;$(GeneratedCodeDir)&quot; -f &quot;$(CodeGenSamplesFile)&quot; -f &quot;$(CoverageSamplesFile)&quot; -f &quot;$(DictionarySamplesFile)&quot; -f &quot;$(UnityStubsFile)&quot;" />
     <ItemGroup>
       <Compile Include="$(GeneratedCodeDir)\**\*.cs" />
     </ItemGroup>
