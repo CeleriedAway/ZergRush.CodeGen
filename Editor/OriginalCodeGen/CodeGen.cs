@@ -3,6 +3,7 @@ using Type = ZergRush.CodeGen.ZRType;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ZergRush;
 using ZergRush.Alive;
 
 namespace ZergRush.CodeGen

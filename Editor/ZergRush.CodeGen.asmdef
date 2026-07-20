@@ -2,6 +2,7 @@
   "name": "ZergRush.CodeGen",
   "rootNamespace": "",
   "references": [
+    "ZergRush.Reactive",
     "ZergRush.CodeGen.Abstractions",
     "Newtonsoft.Json"
   ],

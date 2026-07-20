@@ -2,6 +2,7 @@ using System;
 using Type = ZergRush.CodeGen.ZRType;
 using System.Collections.Generic;
 using System.Reflection;
+using ZergRush;
 using ZergRush.Alive;
 using ZergRush.CodeGen;
 

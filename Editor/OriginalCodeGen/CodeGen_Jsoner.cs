@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Type = ZergRush.CodeGen.ZRType;
 using ZergRush.Alive;
 using Newtonsoft.Json;
