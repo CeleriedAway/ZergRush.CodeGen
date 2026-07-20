@@ -41,7 +41,7 @@ public sealed class CodeGenSamplesParserTests
         Assert.Contains(sample.ChildTypes, child => child.FullName == "ZergRush.Samples.Ancestor");
         Assert.NotNull(sample.TargetFolder);
         Assert.EndsWith(
-            Path.Combine("Samples~", "CodeGenBasics", "x_generated"),
+            Path.Combine("Samples", "x_generated"),
             sample.TargetFolder!.Folder,
             StringComparison.OrdinalIgnoreCase);
 
@@ -215,22 +215,10 @@ public sealed class CodeGenSamplesParserTests
 
     static string CodeGenSamplesPath()
     {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current != null)
-        {
-            var candidate = Path.Combine(
-                current.FullName,
-                "packages",
-                "com.celeriedaway.zergrush",
-                "Samples~",
-                "CodeGenBasics",
-                "CodeGenSamples.cs");
+        var path = Path.Combine(AppContext.BaseDirectory, "Samples", "CodeGenSamples.cs");
+        if (File.Exists(path)) return path;
 
-            if (File.Exists(candidate)) return candidate;
-            current = current.Parent;
-        }
-
-        throw new FileNotFoundException("Could not find CodeGenSamples.cs from test output directory.");
+        throw new FileNotFoundException("Could not find the copied CodeGenSamples.cs test fixture.", path);
     }
 
     static ZRType FindType(IReadOnlyList<ZRType> types, string fullName)
