@@ -1,6 +1,7 @@
 using System.Reflection;
 
-namespace ZergRush.CodeGen;
+namespace ZergRush.CodeGen
+{
 
 public enum ZRTypeKind
 {
@@ -713,8 +714,19 @@ public class ZRMember
     }
 }
 
-public readonly record struct ZRData(string Access, ZRType Type, ZRDataOption Options = ZRDataOption.None)
+public readonly struct ZRData : IEquatable<ZRData>
 {
+    public ZRData(string access, ZRType type, ZRDataOption options = ZRDataOption.None)
+    {
+        Access = access;
+        Type = type;
+        Options = options;
+    }
+
+    public string Access { get; }
+    public ZRType Type { get; }
+    public ZRDataOption Options { get; }
+
     public bool CanBeNull => HasOption(ZRDataOption.CanBeNull);
     public bool SureIsNull => HasOption(ZRDataOption.SureIsNull);
     public bool IsNullable => HasOption(ZRDataOption.IsNullable);
@@ -731,10 +743,31 @@ public readonly record struct ZRData(string Access, ZRType Type, ZRDataOption Op
 
     public ZRData WithOption(ZRDataOption option, bool enabled = true)
     {
-        return this with { Options = enabled ? Options | option : Options & ~option };
+        return new ZRData(Access, Type, enabled ? Options | option : Options & ~option);
     }
 
-    public ZRData WithAccess(string access) => this with { Access = access };
+    public ZRData WithAccess(string access) => new ZRData(access, Type, Options);
+
+    public bool Equals(ZRData other)
+    {
+        return Access == other.Access && Equals(Type, other.Type) && Options == other.Options;
+    }
+
+    public override bool Equals(object obj) => obj is ZRData other && Equals(other);
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var hash = Access != null ? Access.GetHashCode() : 0;
+            hash = (hash * 397) ^ (Type != null ? Type.GetHashCode() : 0);
+            return (hash * 397) ^ (int)Options;
+        }
+    }
+
+    public static bool operator ==(ZRData left, ZRData right) => left.Equals(right);
+    public static bool operator !=(ZRData left, ZRData right) => !left.Equals(right);
 
     public override string ToString() => $"{nameof(Access)}: {Access}, {nameof(Type)}: {Type.FullName}";
+}
 }
