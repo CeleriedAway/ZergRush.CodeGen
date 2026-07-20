@@ -13,7 +13,8 @@
     /// </summary>
     /// <typeparam name="T">Inherited type</typeparam>
     [GenTaskCustomImpl(GenTaskFlags.ConfigData & ~GenTaskFlags.PolymorphicConstruction), GenZergRushFolder()]
-    public abstract partial class GameConfigRoot<T> : IBinarySerializable, IBinaryDeserializable, IJsonSerializable where T : GameConfigRoot<T>, new()
+    public abstract partial class GameConfigRoot<T> : IBinarySerializable, IBinaryDeserializable, IHashable,
+        IJsonSerializable where T : GameConfigRoot<T>, new()
     {
         /// <summary>
         /// Your config container.
@@ -131,6 +132,15 @@
         public virtual bool ReadFromJsonField(ZRJsonTextReader reader, string name)
         {
             return false;
+        }
+
+        public virtual ulong CalculateHash(ZRHashHelper helper)
+        {
+            return 345093625;
+        }
+
+        public virtual void CollectConfigs(ConfigRegister collection)
+        {
         }
     }
 }
