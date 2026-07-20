@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ZergRush.CodeGen;
 using ZergRush.ReactiveCore;
 
