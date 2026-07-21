@@ -29,7 +29,7 @@ namespace ZergRush.CodeGen
                 }
                 else
                 {
-                    sink.content($"{declaredType.RealName(true)} {declaredAccess} = {NewInstExpr(declaredType, false)};");
+                    sink.content($"{declaredType.RealName(true)} {declaredAccess} = {NewInstExpr(declaredType)};");
                 }
 
                 needCreateVar = false;

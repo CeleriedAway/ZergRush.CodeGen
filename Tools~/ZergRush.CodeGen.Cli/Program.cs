@@ -28,7 +28,18 @@ try
             }
         }
 
-        CodeGen.Gen(types, options.GenerationOutput);
+        var session = new CodeGenSession(types, options.GenerationOutput)
+            .AddGenerator(activeSession =>
+            {
+                foreach (var request in parser.ProtocolGenerationRequests)
+                {
+                    activeSession.RequestGeneration(
+                        request.Type,
+                        request.Requester,
+                        GenTaskFlags.Serialization);
+                }
+            });
+        session.Generate();
         Console.WriteLine(options.PreserveTargetFolders
             ? $"Generated source using parsed target folders and {options.GenerationOutput} as fallback."
             : $"Generated source into {options.GenerationOutput}.");
@@ -62,7 +73,7 @@ try
 }
 catch (Exception exception)
 {
-    Console.Error.WriteLine(exception.Message);
+    Console.Error.WriteLine(exception);
     Console.Error.WriteLine();
     Console.Error.WriteLine(ZRCodeGenCliArguments.Usage);
     return 2;

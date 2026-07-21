@@ -385,7 +385,7 @@ namespace ZergRush.CodeGen
 
                 bool immutableMode = type.IsStruct() && !type.IsControllable();
                 if (immutableMode)
-                    sinkReader.content($"var self = new {type.RealName(true)}();");
+                    sinkReader.content($"var self = default({type.RealName(true)});");
                 type.ProcessMembers(flag, true,
                     (member, info, declaredAccess) =>
                     {

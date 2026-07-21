@@ -113,7 +113,7 @@ namespace ZergRush.CodeGen
                     sink.indent++;
                     CompareCheckValue(sink,
                         elemType.ToData("self[i]", elemType.IsValueType ? ZRDataOption.None : ZRDataOption.CanBeNull),
-                        $"{otherName}[i]", "i.ToString()");
+                        elemType.ToData($"{otherName}[i]").Access, "i.ToString()");
                     sink.indent--;
                     sink.content($"}}");
                 }
@@ -137,7 +137,7 @@ namespace ZergRush.CodeGen
                     CompareCheckValue(
                         sink,
                         valueType.ToData("item.Value", valueType.IsValueType ? ZRDataOption.None : ZRDataOption.CanBeNull),
-                        "otherValue",
+                        valueType.ToData("otherValue").Access,
                         "item.Key.ToString()");
                     sink.closeBrace();
                     sink.closeBrace();

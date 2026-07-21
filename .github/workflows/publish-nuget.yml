@@ -1,0 +1,108 @@
+name: Publish NuGet packages
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: publish-nuget
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Build, test, and publish
+    runs-on: ubuntu-latest
+    environment: nuget-release
+
+    steps:
+      - name: Checkout CodeGen
+        uses: actions/checkout@v4
+
+      - name: Checkout matching Reactive release
+        uses: actions/checkout@v4
+        with:
+          repository: CeleriedAway/ZergRush.Reactive
+          ref: ${{ github.ref_name }}
+          path: external/ZergRush.Reactive
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate release version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          codegen_version="$(dotnet msbuild src/ZergRush.CodeGen/ZergRush.CodeGen.csproj -getProperty:Version | tail -n 1)"
+          reactive_version="$(dotnet msbuild external/ZergRush.Reactive/src/ZergRush.Reactive/ZergRush.Reactive.csproj -getProperty:Version | tail -n 1)"
+
+          test "$version" = "$codegen_version"
+          test "$version" = "$reactive_version"
+
+      - name: Build and test
+        shell: bash
+        run: |
+          set -euo pipefail
+          reactive_project="$GITHUB_WORKSPACE/external/ZergRush.Reactive/src/ZergRush.Reactive/ZergRush.Reactive.csproj"
+
+          dotnet build "$reactive_project" --configuration Release
+          dotnet test ZergRush.CodeGen.sln \
+            --configuration Release \
+            -p:ZergRushReactiveProjectPath="$reactive_project"
+
+      - name: Pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          reactive_project="$GITHUB_WORKSPACE/external/ZergRush.Reactive/src/ZergRush.Reactive/ZergRush.Reactive.csproj"
+          package_dir="$GITHUB_WORKSPACE/artifacts/packages"
+
+          dotnet pack "$reactive_project" \
+            --configuration Release \
+            --output "$package_dir"
+          dotnet pack src/ZergRush.CodeGen.Core/ZergRush.CodeGen.Core.csproj \
+            --configuration Release \
+            --output "$package_dir" \
+            -p:ZergRushReactiveProjectPath="$reactive_project"
+          dotnet pack src/ZergRush.CodeGen/ZergRush.CodeGen.csproj \
+            --configuration Release \
+            --output "$package_dir" \
+            -p:ZergRushReactiveProjectPath="$reactive_project"
+          dotnet pack src/ZergRush.CodeGen.Cli/ZergRush.CodeGen.Cli.csproj \
+            --configuration Release \
+            --output "$package_dir" \
+            -p:ZergRushReactiveProjectPath="$reactive_project"
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages-${{ github.ref_name }}
+          path: artifacts/packages/*.nupkg
+          if-no-files-found: error
+
+      - name: Obtain temporary NuGet credential
+        id: nuget
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish packages
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ steps.nuget.outputs.NUGET_API_KEY }}
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          source="https://api.nuget.org/v3/index.json"
+
+          dotnet nuget push "artifacts/packages/ZergRush.Reactive.${version}.nupkg" --source "$source" --api-key "$NUGET_API_KEY" --skip-duplicate
+          dotnet nuget push "artifacts/packages/ZergRush.CodeGen.Core.${version}.nupkg" --source "$source" --api-key "$NUGET_API_KEY" --skip-duplicate
+          dotnet nuget push "artifacts/packages/ZergRush.CodeGen.${version}.nupkg" --source "$source" --api-key "$NUGET_API_KEY" --skip-duplicate
+          dotnet nuget push "artifacts/packages/ZergRush.CodeGen.Cli.${version}.nupkg" --source "$source" --api-key "$NUGET_API_KEY" --skip-duplicate

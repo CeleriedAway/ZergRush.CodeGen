@@ -420,7 +420,7 @@ namespace ZergRush.CodeGen
                     sinkReader.needBaseValCall = false;
                 }
 
-                if (immutableMode) sinkReader.content($"var self = new {type.RealName(true)}();");
+                if (immutableMode) sinkReader.content($"var self = default({type.RealName(true)});");
 
                 if (externalMode)
                 {

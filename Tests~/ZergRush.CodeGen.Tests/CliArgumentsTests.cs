@@ -5,6 +5,18 @@ namespace ZergRush.CodeGen.Tests;
 public sealed class CliArgumentsTests
 {
     [Fact]
+    public void Generation_preserves_target_folders_by_default_with_flat_output_as_opt_in()
+    {
+        var local = ZRCodeGenCliArguments.Parse(["-p", "Game.csproj", "--generate", "Generated"]);
+        var flat = ZRCodeGenCliArguments.Parse([
+            "-p", "Game.csproj", "--generate", "Generated", "--single-output-folder"
+        ]);
+
+        Assert.True(local.PreserveTargetFolders);
+        Assert.False(flat.PreserveTargetFolders);
+    }
+
+    [Fact]
     public void Search_up_resolves_nearest_typed_project()
     {
         using var tree = new TempTree();

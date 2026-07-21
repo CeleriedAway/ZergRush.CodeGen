@@ -20,14 +20,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ZergRush.CodeGen.Abstractions\ZergRush.CodeGen.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\ZergRush.CodeGen.Core\ZergRush.CodeGen.Core.csproj" />
     <ProjectReference Include="..\..\src\ZergRush.CodeGen.Cli\ZergRush.CodeGen.Cli.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <Target Name="GenerateDictionarySamples" BeforeTargets="CoreCompile" DependsOnTargets="ResolveProjectReferences">
     <RemoveDir Directories="$(GeneratedCodeDir)" />
     <MakeDir Directories="$(GeneratedCodeDir)" />
-    <Exec Command="dotnet &quot;$(MSBuildProjectDirectory)\..\..\src\ZergRush.CodeGen.Cli\bin\$(Configuration)\net10.0\ZergRush.CodeGen.Cli.dll&quot; --generate &quot;$(GeneratedCodeDir)&quot; -f &quot;$(SampleFile)&quot;" />
+    <Exec Command="dotnet &quot;$(MSBuildProjectDirectory)\..\..\src\ZergRush.CodeGen.Cli\bin\$(Configuration)\net10.0\ZergRush.CodeGen.Cli.dll&quot; --single-output-folder --generate &quot;$(GeneratedCodeDir)&quot; -f &quot;$(SampleFile)&quot;" />
     <ItemGroup>
       <Compile Include="$(GeneratedCodeDir)\**\*.cs" />
     </ItemGroup>

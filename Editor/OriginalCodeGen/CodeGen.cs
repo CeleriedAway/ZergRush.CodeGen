@@ -557,10 +557,7 @@ namespace ZergRush.CodeGen
             {
                 if (!cleanOutputDirectories) return;
                 if (Directory.Exists(genFolder) == false)
-                {
-                    Directory.CreateDirectory(genFolder);
                     return;
-                }
 
                 foreach (FileInfo file in new DirectoryInfo(genFolder).GetFiles())
                 {

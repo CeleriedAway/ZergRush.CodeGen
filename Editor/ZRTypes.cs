@@ -448,8 +448,22 @@ public class ZRType
             return typeof(Nullable<>).MakeGenericType(nullableType);
         }
 
-        return System.Type.GetType(FullName) ??
-               System.Type.GetType(WrittenName) ??
+        static System.Type? ResolveTypeName(string name)
+        {
+            try
+            {
+                return System.Type.GetType(name, throwOnError: false);
+            }
+            catch (System.IO.FileLoadException)
+            {
+                // Source display names (notably named tuples) are valid C# but are
+                // not reflection assembly-qualified names.
+                return null;
+            }
+        }
+
+        return ResolveTypeName(FullName) ??
+               ResolveTypeName(WrittenName) ??
                AppDomain.CurrentDomain.GetAssemblies()
                    .Select(assembly => assembly.GetType(FullName))
                    .FirstOrDefault(type => type != null);
@@ -707,6 +721,13 @@ public class ZRMember
         if (MemberType == null)
         {
             throw new InvalidOperationException($"Cannot create data access for unresolved member {Name}.");
+        }
+
+        // Source annotations such as JetBrains CanBeNull occasionally survive on
+        // non-nullable structs.  They cannot participate in null protocols.
+        if (MemberType.IsValueType && (options & ZRDataOption.IsNullable) == 0)
+        {
+            options &= ~ZRDataOption.CanBeNull;
         }
 
         return new ZRData(BuildDataAccess(access ?? Name), MemberType, options);

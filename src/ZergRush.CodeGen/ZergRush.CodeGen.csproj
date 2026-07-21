@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Description>Parser and generator library for ZergRush code generation.</Description>
+    <Description>Extensible Roslyn-based C# source generation for high-performance binary and JSON serialization, deterministic hashing, deep copying and replication, and deep structural comparison. Supports classes, structs, inheritance, generics, and custom generation extensions.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ZergRush.CodeGen.Abstractions\ZergRush.CodeGen.Abstractions.csproj" />
+    <ProjectReference Include="..\ZergRush.CodeGen.Core\ZergRush.CodeGen.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />

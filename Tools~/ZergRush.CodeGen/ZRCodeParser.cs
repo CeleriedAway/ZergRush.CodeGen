@@ -17,6 +17,10 @@ public sealed class ZRCodeParser
     readonly HashSet<string> declaredTypeNames = new(StringComparer.Ordinal);
     readonly List<ZRType> parsedTypes = new();
     readonly List<PendingGenericInstanceRegistration> pendingGenericInstanceRegistrations = new();
+    readonly List<(ZRType Type, ZRType Requester)> protocolGenerationRequests = new();
+
+    public IReadOnlyList<(ZRType Type, ZRType Requester)> ProtocolGenerationRequests =>
+        protocolGenerationRequests;
 
     sealed class PendingGenericInstanceRegistration
     {
@@ -39,6 +43,7 @@ public sealed class ZRCodeParser
         declaredTypeNames.Clear();
         parsedTypes.Clear();
         pendingGenericInstanceRegistrations.Clear();
+        protocolGenerationRequests.Clear();
 
         var syntaxTrees = files
             .Where(File.Exists)
@@ -56,6 +61,11 @@ public sealed class ZRCodeParser
 
         foreach (var tree in syntaxTrees)
         {
+            // Generated sources still belong in the Roslyn compilation: project source can
+            // reference generated enums and partial surfaces.  They must not, however, be
+            // parsed back into the generation model or the next run duplicates their output.
+            if (IsGeneratedSourcePath(tree.FilePath)) continue;
+
             var model = compilation.GetSemanticModel(tree, ignoreAccessibility: true);
             var root = tree.GetRoot();
 
@@ -73,6 +83,8 @@ public sealed class ZRCodeParser
         RegisterExplicitGenericInstances(compilation);
         LinkChildTypes();
         BuildDataMembers();
+        ApplyProtocolMethodGenerationFlags();
+        ApplyExtensionMethodCustomImplementations(compilation);
         return parsedTypes;
     }
 
@@ -157,7 +169,7 @@ public sealed class ZRCodeParser
         foreach (var include in compileItems)
         {
             var path = Path.GetFullPath(Path.Combine(projectDir, include!));
-            if (File.Exists(path) && !IsIgnoredGeneratedPath(path))
+            if (File.Exists(path))
             {
                 result.Add(path);
             }
@@ -169,6 +181,13 @@ public sealed class ZRCodeParser
         var normalized = path.Replace('\\', '/');
         return normalized.Contains("/bin/", StringComparison.OrdinalIgnoreCase) ||
                normalized.Contains("/obj/", StringComparison.OrdinalIgnoreCase) ||
+               IsGeneratedSourcePath(path);
+    }
+
+    static bool IsGeneratedSourcePath(string path)
+    {
+        var normalized = path.Replace('\\', '/');
+        return
                normalized.Contains("/x_generated/", StringComparison.OrdinalIgnoreCase) ||
                normalized.Contains("/zGenerated/", StringComparison.OrdinalIgnoreCase) ||
                normalized.Contains("/ZergRushGenerated/", StringComparison.OrdinalIgnoreCase) ||
@@ -208,15 +227,18 @@ public sealed class ZRCodeParser
             RecordDeclarationSyntax => ZRTypeKind.Class,
             _ => ZRTypeKind.Unknown
         };
-        zrType.IsAbstract = declaration.Modifiers.Any(SyntaxKind.AbstractKeyword);
-        zrType.IsSealed = declaration.Modifiers.Any(SyntaxKind.SealedKeyword);
-        zrType.HasDeclaredConstructors = declaration.Members.OfType<ConstructorDeclarationSyntax>().Any();
-        zrType.HasDeclaredParameterlessConstructor = declaration.Members.OfType<ConstructorDeclarationSyntax>()
+        zrType.IsAbstract |= declaration.Modifiers.Any(SyntaxKind.AbstractKeyword);
+        zrType.IsSealed |= declaration.Modifiers.Any(SyntaxKind.SealedKeyword);
+        zrType.HasDeclaredConstructors |= declaration.Members.OfType<ConstructorDeclarationSyntax>().Any();
+        zrType.HasDeclaredParameterlessConstructor |= declaration.Members.OfType<ConstructorDeclarationSyntax>()
             .Any(ctor => ctor.ParameterList.Parameters.Count == 0);
 
         zrType.Source ??= SourceLocation(declaration);
         EnsureDefaultTargetFolder(zrType);
-        zrType.Attributes = ReadAttributes(symbol, declaration.AttributeLists, model);
+        if (zrType.Attributes.Count == 0)
+        {
+            zrType.Attributes.AddRange(ReadAttributes(symbol, declaration.AttributeLists, model));
+        }
         ApplyTypeAttributes(zrType);
         if (symbol?.IsGenericType == true)
         {
@@ -228,7 +250,13 @@ public sealed class ZRCodeParser
             zrType.BaseType = symbol.BaseType is { SpecialType: not SpecialType.System_Object }
                 ? TypeFromSymbol(symbol.BaseType)
                 : null;
-            zrType.Interfaces = symbol.Interfaces.Select(t => TypeFromSymbol(t)).ToList();
+            foreach (var interfaceType in symbol.Interfaces.Select(t => TypeFromSymbol(t)))
+            {
+                if (zrType.Interfaces.All(existing => existing.FullName != interfaceType.FullName))
+                {
+                    zrType.Interfaces.Add(interfaceType);
+                }
+            }
             zrType.GenericParameters = symbol.TypeParameters.Select(ReadGenericParameter).ToList();
             RegisterConstructedGenericSurface(zrType.BaseType, zrType);
             foreach (var interfaceType in zrType.Interfaces)
@@ -261,10 +289,9 @@ public sealed class ZRCodeParser
             zrType.Members.Add(ParseProperty(property, model, zrType));
         }
 
-        zrType.Methods = declaration.Members.OfType<MethodDeclarationSyntax>()
+        zrType.Methods.AddRange(declaration.Members.OfType<MethodDeclarationSyntax>()
             .Where(method => !method.Modifiers.Any(SyntaxKind.StaticKeyword))
-            .Select(method => ParseMethod(method, model, zrType))
-            .ToList();
+            .Select(method => ParseMethod(method, model, zrType)));
     }
 
     void QueueExplicitGenericInstances(
@@ -448,6 +475,114 @@ public sealed class ZRCodeParser
             {
                 type.DataMembers = type.DataMembers.OrderBy(data => data.Access, StringComparer.Ordinal).ToList();
             }
+        }
+    }
+
+    void ApplyExtensionMethodCustomImplementations(CSharpCompilation compilation)
+    {
+        var flagsByType = new Dictionary<ZRType, GenTaskFlags>();
+        foreach (var tree in compilation.SyntaxTrees)
+        {
+            if (IsGeneratedSourcePath(tree.FilePath)) continue;
+            var model = compilation.GetSemanticModel(tree, ignoreAccessibility: true);
+            foreach (var declaration in tree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
+            {
+                if (model.GetDeclaredSymbol(declaration) is not IMethodSymbol { IsExtensionMethod: true } method ||
+                    method.Parameters.Length == 0)
+                {
+                    continue;
+                }
+
+                var flag = method.Name switch
+                {
+                    "UpdateFrom" => GenTaskFlags.UpdateFrom,
+                    "Deserialize" => GenTaskFlags.Deserialize,
+                    "Serialize" => GenTaskFlags.Serialize,
+                    "CalculateHash" => GenTaskFlags.Hash,
+                    "CompareCheck" => GenTaskFlags.CompareChech,
+                    "ReadFromJson" or "WriteJson" => GenTaskFlags.JsonSerialization,
+                    _ => GenTaskFlags.None
+                };
+
+                ITypeSymbol? targetSymbol = method.Parameters[0].Type;
+                if (flag == GenTaskFlags.None &&
+                    method.Name.StartsWith("Read", StringComparison.Ordinal) &&
+                    method.ReturnType.SpecialType != SpecialType.System_Void &&
+                    method.Parameters[0].Type.Name is "ZRBinaryReader" or "ZRJsonTextReader")
+                {
+                    targetSymbol = method.ReturnType;
+                    flag = method.Parameters[0].Type.Name == "ZRBinaryReader"
+                        ? GenTaskFlags.Deserialize
+                        : GenTaskFlags.JsonSerialization;
+                }
+
+                if (flag == GenTaskFlags.None || targetSymbol == null) continue;
+                var target = TypeFromSymbol(targetSymbol);
+                flagsByType[target] = flagsByType.GetValueOrDefault(target) | flag;
+            }
+        }
+
+        foreach (var (type, flags) in flagsByType)
+        {
+            var custom = type.CustomImplementations.FirstOrDefault();
+            if (custom == null)
+            {
+                custom = new ZRCustomImplInfo { Inheritable = false };
+                type.CustomImplementations.Add(custom);
+            }
+
+            custom.Flags |= flags;
+            type.CustomImplementFlags |= flags;
+            type.Options |= ZRTypeOption.HasCustomImplementation;
+        }
+    }
+
+    void ApplyProtocolMethodGenerationFlags()
+    {
+        // RPC and game-command generators serialize their method arguments and results,
+        // even when those types are not reachable from a [GenTask] data member. Make
+        // that protocol surface an explicit built-in generation root for CLI runs.
+        foreach (var owner in parsedTypes.ToArray())
+        {
+            foreach (var method in owner.Methods.Where(method =>
+                         method.Attributes.Any(attribute => attribute.Name is "RPCCall" or "GameCommand")))
+            {
+                foreach (var parameter in method.Parameters)
+                {
+                    RegisterProtocolType(parameter.ParameterType, owner);
+                }
+
+                var returnType = method.ReturnType;
+                if (IsTask(returnType))
+                {
+                    var taskArguments = returnType.GetGenericArguments();
+                    if (taskArguments.Length == 0) continue;
+                    returnType = taskArguments[0];
+                }
+
+                RegisterProtocolType(returnType, owner);
+            }
+        }
+    }
+
+    static bool IsTask(ZRType type) =>
+        type.Name is "Task" or "Task`1" ||
+        type.FullName.StartsWith("System.Threading.Tasks.Task<", StringComparison.Ordinal);
+
+    void RegisterProtocolType(ZRType? type, ZRType owner)
+    {
+        if (type == null || type.Kind == ZRTypeKind.Void) return;
+
+        type.Source ??= owner.Source;
+        if (!declaredTypeNames.Contains(type.FullName) && parsedTypes.All(item => item.FullName != type.FullName))
+        {
+            parsedTypes.Add(type);
+        }
+
+        if (protocolGenerationRequests.All(request =>
+                request.Type.FullName != type.FullName || request.Requester.FullName != owner.FullName))
+        {
+            protocolGenerationRequests.Add((type, owner));
         }
     }
 
@@ -786,8 +921,10 @@ public sealed class ZRCodeParser
             ? TypeFromSymbol(symbol.BaseType)
             : null;
         type.Interfaces = symbol.Interfaces.Select(t => TypeFromSymbol(t)).ToList();
-        type.Members = symbol.GetMembers()
-            .OfType<IFieldSymbol>()
+        var fields = symbol.IsTupleType
+            ? symbol.TupleElements.Select(field => field.CorrespondingTupleField ?? field)
+            : symbol.GetMembers().OfType<IFieldSymbol>();
+        type.Members = fields
             .Where(field => !field.IsStatic)
             .Select(field => ParseExternalField(field, type))
             .ToList();

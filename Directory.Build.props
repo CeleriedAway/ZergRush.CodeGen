@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Authors>Alexandr Pyatkov</Authors>
+    <Version>0.1.0-preview.1</Version>
     <RepositoryUrl>https://github.com/CeleriedAway/ZergRush</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>

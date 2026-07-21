@@ -21,7 +21,7 @@ zrgen --search-down -p
 zrgen --search-down -f "*.cs"
 ```
 
-Pass `--generate <directory>` to generate source. Without it, the CLI parses and prints the resolved model, which is useful for validating a project or solution input before generation.
+Pass `--generate <directory>` to generate source. Generated types honor their parsed target folders by default, which places unannotated types in a local `x_generated` folder beside their source. The supplied directory is the fallback. Pass `--single-output-folder` to intentionally flatten every generated file into that fallback directory. Without `--generate`, the CLI parses and prints the resolved model, which is useful for validating a project or solution input before generation.
 
 ## Using CodeGen as a Unity editor library
 

@@ -46,16 +46,13 @@ namespace ZergRush.CodeGen
             else if (t == typeof(float)) return $"(ulong)BitConverter.SingleToInt32Bits({name})";
             else if (t == typeof(double)) return $"(ulong)BitConverter.DoubleToInt64Bits({name})";
             else if (t == typeof(decimal)) return $"(ulong){name}.GetHashCode()";
+            else if (t == typeof(DateTime)) return $"({HashTypeName}){name}.Ticks";
             else if (t.IsPrimitive || t.IsEnum) return $"({HashType}){name}";
 
             string calcHash = $"{name}.CalculateHash({HelperName})";
             if (t == typeof(string))
             {
                 calcHash = $"CodeGenImplTools.CalculateStringHash({name})";
-            }
-            else if (t == typeof(DateTime))
-            {
-                calcHash = $"({HashTypeName}){name}.Ticks";
             }
             else if (t.IsLoadableConfig())
             {

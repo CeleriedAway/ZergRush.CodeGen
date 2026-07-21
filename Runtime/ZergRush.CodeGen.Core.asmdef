@@ -1,5 +1,5 @@
 {
-  "name": "ZergRush.CodeGen.Abstractions",
+  "name": "ZergRush.CodeGen.Core",
   "rootNamespace": "",
   "references": [
     "ZergRush.Reactive",

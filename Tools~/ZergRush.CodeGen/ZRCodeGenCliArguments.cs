@@ -33,7 +33,8 @@ public sealed class ZRCodeGenCliArguments
 
         Generation:
               --generate <directory>     Generate code using this fallback output directory
-              --preserve-target-folders  Honor target folders parsed from source attributes
+              --preserve-target-folders  Honor parsed target folders (the default)
+              --single-output-folder     Put every generated file in --generate directory
           -h, --help                     Show this help
 
         Examples:
@@ -44,7 +45,7 @@ public sealed class ZRCodeGenCliArguments
         """;
 
     public string? GenerationOutput { get; private set; }
-    public bool PreserveTargetFolders { get; private set; }
+    public bool PreserveTargetFolders { get; private set; } = true;
     public bool ShowHelp { get; private set; }
     public ZRCodeGenSearchMode SearchMode { get; private set; }
     public List<ZRCodeGenInput> Inputs { get; } = [];
@@ -68,6 +69,9 @@ public sealed class ZRCodeGenCliArguments
                     break;
                 case "--preserve-target-folders":
                     result.PreserveTargetFolders = true;
+                    break;
+                case "--single-output-folder":
+                    result.PreserveTargetFolders = false;
                     break;
                 case "--generate":
                     result.GenerationOutput = Path.GetFullPath(RequiredValue(args, ref i, "--generate"));
