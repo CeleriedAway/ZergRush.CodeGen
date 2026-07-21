@@ -245,7 +245,8 @@ public sealed class ZRCodeParser
 
         foreach (var field in declaration.Members.OfType<FieldDeclarationSyntax>())
         {
-            if (field.Modifiers.Any(SyntaxKind.StaticKeyword)) continue;
+            if (field.Modifiers.Any(SyntaxKind.StaticKeyword) ||
+                field.Modifiers.Any(SyntaxKind.ConstKeyword)) continue;
             foreach (var variable in field.Declaration.Variables)
             {
                 var member = ParseField(field, variable, model, zrType);

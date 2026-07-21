@@ -158,6 +158,28 @@ public sealed class CodeGenSamplesParserTests
     }
 
     [Fact]
+    public void Constants_are_not_registered_as_instance_fields()
+    {
+        var types = ParseSource("""
+            namespace ParserSamples;
+
+            public class ConstantsOwner
+            {
+                public const int Constant = 1;
+                public static int StaticValue;
+                public readonly int ReadOnlyValue;
+                public int Value;
+            }
+            """);
+
+        var type = Assert.Single(types, type => type.FullName == "ParserSamples.ConstantsOwner");
+        Assert.DoesNotContain(type.Members, member => member.Name == "Constant");
+        Assert.DoesNotContain(type.Members, member => member.Name == "StaticValue");
+        Assert.Contains(type.Members, member => member.Name == "ReadOnlyValue");
+        Assert.Contains(type.Members, member => member.Name == "Value");
+    }
+
+    [Fact]
     public void Generic_instance_attribute_rejects_invalid_usage()
     {
         var misplaced = Assert.Throws<InvalidOperationException>(() => ParseSource("""
