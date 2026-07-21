@@ -141,7 +141,9 @@ public sealed class ZRCodeParser
             var parts = trimmed.Split('"');
             if (parts.Length < 6) continue;
 
-            var projectPath = parts[5];
+            var projectPath = parts[5]
+                .Replace('\\', Path.DirectorySeparatorChar)
+                .Replace('/', Path.DirectorySeparatorChar);
             if (!projectPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)) continue;
 
             AddProjectFiles(Path.GetFullPath(Path.Combine(solutionDir, projectPath)), result);
