@@ -8,26 +8,29 @@ namespace ZergRush.CodeGen.Tests {
 
     public partial class LivableAddressBaseOwner
     {
-        public virtual void Enlive() 
+        public override void Enlive() 
         {
             EnliveSelf();
             EnliveChildren();
         }
-        public virtual void Mortify() 
+        public override void Mortify() 
         {
             MortifySelf();
             MortifyChildren();
         }
-        protected virtual void EnliveChildren() 
+        protected override void EnliveChildren() 
         {
+            base.EnliveChildren();
             alphaBaseChild.Enlive();
         }
-        protected virtual void MortifyChildren() 
+        protected override void MortifyChildren() 
         {
+            base.MortifyChildren();
             alphaBaseChild.Mortify();
         }
-        public virtual void VisitNode(Action<object> action) 
+        public override void VisitNode(Action<object> action) 
         {
+            base.VisitNode(action);
             alphaBaseChild.VisitNode(action);
         }
         public override ZergRush.Alive.ILivable GetLivableChild(int localChildId) 
@@ -38,8 +41,9 @@ namespace ZergRush.CodeGen.Tests {
             }
             return base.GetLivableChild(localChildId);
         }
-        public virtual void __PropagateHierarchy() 
+        public override void __PropagateHierarchy() 
         {
+            base.__PropagateHierarchy();
             alphaBaseChild.SetRootAndCarrier(root, this);
             alphaBaseChild.__PropagateHierarchy();
         }

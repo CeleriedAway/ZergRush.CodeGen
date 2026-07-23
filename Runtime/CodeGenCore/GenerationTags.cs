@@ -210,10 +210,11 @@ public class GenTaskCustomImpl : GenTask
     public bool genBaseMethods;
     public bool inheritable;
 
-    public GenTaskCustomImpl(GenTaskFlags flags, bool genBaseMethods = false, bool inheritable = true) : base(flags)
+    public GenTaskCustomImpl(GenTaskFlags flags, bool genBaseMethods = false, bool inheritable = false) : base(flags)
     {
         this.flags = flags;
         this.genBaseMethods = genBaseMethods;
+        this.inheritable = inheritable;
     }
 }
 

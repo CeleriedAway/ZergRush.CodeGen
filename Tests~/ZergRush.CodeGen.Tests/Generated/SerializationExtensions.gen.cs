@@ -367,14 +367,14 @@ public static partial class SerializationExtensions
     }
     public static ZergRush.Samples.PlainStruct ReadZergRush_Samples_PlainStruct(this ZRBinaryReader reader) 
     {
-        var self = new ZergRush.Samples.PlainStruct();
+        var self = default(ZergRush.Samples.PlainStruct);
         self.position = reader.ReadUnityEngine_Vector3();
         self.value = reader.ReadInt32();
         return self;
     }
     public static UnityEngine.Vector3 ReadUnityEngine_Vector3(this ZRBinaryReader reader) 
     {
-        var self = new UnityEngine.Vector3();
+        var self = default(UnityEngine.Vector3);
         self.x = reader.ReadSingle();
         self.y = reader.ReadSingle();
         self.z = reader.ReadSingle();
@@ -1323,7 +1323,7 @@ public static partial class SerializationExtensions
     }
     public static ZergRush.Samples.PlainStruct ReadFromJsonZergRush_Samples_PlainStruct(this ZRJsonTextReader reader) 
     {
-        var self = new ZergRush.Samples.PlainStruct();
+        var self = default(ZergRush.Samples.PlainStruct);
         while (reader.Read())
         {
             if (reader.TokenType == JsonToken.PropertyName)
@@ -1355,7 +1355,7 @@ public static partial class SerializationExtensions
     }
     public static UnityEngine.Vector3 ReadFromJsonUnityEngine_Vector3(this ZRJsonTextReader reader) 
     {
-        var self = new UnityEngine.Vector3();
+        var self = default(UnityEngine.Vector3);
         while (reader.Read())
         {
             if (reader.TokenType == JsonToken.PropertyName)
@@ -1955,6 +1955,251 @@ public static partial class SerializationExtensions
         }
         writer.WriteEndArray();
     }
+    public static void UpdateFrom(this ZergRush.Alive.ConfigStorageDict<string, ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZergRush.Alive.ConfigStorageDict<string, ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> other, ZRUpdateFromHelper __helper) 
+    {
+        if (other.Count == 0) { self.Clear(); return; }
+        string[] __keysToRemove = null;
+        int __removeCount = 0;
+        foreach (var __pair in self)
+        {
+            if (!other.ContainsKey(__pair.Key))
+            {
+                __keysToRemove ??= new string[self.Count];
+                __keysToRemove[__removeCount++] = __pair.Key;
+            }
+        }
+        for (int __i = 0; __i < __removeCount; ++__i)
+        {
+            self.Remove(__keysToRemove[__i]);
+        }
+        foreach (var __pair in other)
+        {
+            self[__pair.Key] = __pair.Value;
+        }
+    }
+    public static void UpdateFrom(this ZergRush.Alive.ConfigStorageList<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZergRush.Alive.ConfigStorageList<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> other, ZRUpdateFromHelper __helper) 
+    {
+        int i = 0;
+        int oldCount = self.Count;
+        int crossCount = Math.Min(oldCount, other.Count);
+        for (; i < crossCount; ++i)
+        {
+            self[i] = other[i];
+        }
+        for (; i < other.Count; ++i)
+        {
+            var inst = other[i];
+            self.Add(inst);
+        }
+        for (; i < oldCount; ++i)
+        {
+            self.RemoveAt(self.Count - 1);
+        }
+    }
+    public static void UpdateFrom(this ZergRush.Alive.ConfigStorageSlot<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZergRush.Alive.ConfigStorageSlot<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> other, ZRUpdateFromHelper __helper) 
+    {
+        int i = 0;
+        int oldCount = self.Count;
+        int crossCount = Math.Min(oldCount, other.Count);
+        for (; i < crossCount; ++i)
+        {
+            self[i] = other[i];
+        }
+        for (; i < other.Count; ++i)
+        {
+            var inst = other[i];
+            self.Add(inst);
+        }
+        for (; i < oldCount; ++i)
+        {
+            self.RemoveAt(self.Count - 1);
+        }
+    }
+    public static void Deserialize(this ZergRush.Alive.ConfigStorageDict<string, ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        for (int i = 0; i < size; i++)
+        {
+            var key = default(string);
+            key = string.Empty;
+            key = reader.ReadString();
+            if (!reader.ReadBoolean()) { self.Add(key, null); continue; }
+            var val = default(ZergRush.CodeGen.Tests.ConfigStorageCoverageItem);
+            val = new ZergRush.CodeGen.Tests.ConfigStorageCoverageItem();
+            val.Deserialize(reader);
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageRoot.Instance.RegisterConfig(val);
+            self.Add(key, val);
+        }
+    }
+    public static void Deserialize(this ZergRush.Alive.ConfigStorageList<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        self.Capacity = size;
+        for (int i = 0; i < size; i++)
+        {
+            if (!reader.ReadBoolean()) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageItem val = default;
+            val = new ZergRush.CodeGen.Tests.ConfigStorageCoverageItem();
+            val.Deserialize(reader);
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageRoot.Instance.RegisterConfig(val);
+            self.Add(val);
+        }
+    }
+    public static void Deserialize(this ZergRush.Alive.ConfigStorageSlot<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRBinaryReader reader) 
+    {
+        self.Clear();
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        self.Capacity = size;
+        for (int i = 0; i < size; i++)
+        {
+            if (!reader.ReadBoolean()) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageItem val = default;
+            val = new ZergRush.CodeGen.Tests.ConfigStorageCoverageItem();
+            val.Deserialize(reader);
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageRoot.Instance.RegisterConfig(val);
+            self.Add(val);
+        }
+    }
+    public static void Serialize(this ZergRush.Alive.ConfigStorageDict<string, ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        foreach (var item in self)
+        {
+            writer.Write(item.Key);
+            if (!(item.Value != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                item.Value.Serialize(writer);
+            }
+        }
+    }
+    public static void Serialize(this ZergRush.Alive.ConfigStorageList<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                self[i].Serialize(writer);
+            }
+        }
+    }
+    public static void Serialize(this ZergRush.Alive.ConfigStorageSlot<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                self[i].Serialize(writer);
+            }
+        }
+    }
+    public static bool ReadFromJson(this ZergRush.Alive.ConfigStorageDict<string, ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            if (reader.TokenType != JsonToken.StartObject) throw new JsonSerializationException("Bad Json Format");
+            reader.Read();
+            reader.Read();
+            string key = default;
+            key = string.Empty;
+            key = (string) reader.Value;
+            reader.Read();
+            reader.Read();
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageItem val = default;
+            val = new ZergRush.CodeGen.Tests.ConfigStorageCoverageItem();
+            val.ReadFromJson(reader);
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageRoot.Instance.RegisterConfig(val);
+            reader.ReadSkipComments();
+            self.Add(key, val);
+        }
+        return true;
+    }
+    public static void WriteJson(this ZergRush.Alive.ConfigStorageDict<string, ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        foreach (var item in self)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("key");
+            writer.WriteValue(item.Key);
+            writer.WritePropertyName("value");
+            item.Value.WriteJson(writer);
+            writer.WriteEndObject();
+        }
+        writer.WriteEndArray();
+    }
+    public static bool ReadFromJson(this ZergRush.Alive.ConfigStorageList<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageItem val = default;
+            val = new ZergRush.CodeGen.Tests.ConfigStorageCoverageItem();
+            val.ReadFromJson(reader);
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageRoot.Instance.RegisterConfig(val);
+            self.Add(val);
+        }
+        return true;
+    }
+    public static void WriteJson(this ZergRush.Alive.ConfigStorageList<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                self[i].WriteJson(writer);
+            }
+        }
+        writer.WriteEndArray();
+    }
+    public static bool ReadFromJson(this ZergRush.Alive.ConfigStorageSlot<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        self.Clear();
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageItem val = default;
+            val = new ZergRush.CodeGen.Tests.ConfigStorageCoverageItem();
+            val.ReadFromJson(reader);
+            ZergRush.CodeGen.Tests.ConfigStorageCoverageRoot.Instance.RegisterConfig(val);
+            self.Add(val);
+        }
+        return true;
+    }
+    public static void WriteJson(this ZergRush.Alive.ConfigStorageSlot<ZergRush.CodeGen.Tests.ConfigStorageCoverageItem> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                self[i].WriteJson(writer);
+            }
+        }
+        writer.WriteEndArray();
+    }
     public static void UpdateFrom(this System.Collections.Generic.Dictionary<int, ZergRush.Samples.OtherData> self, System.Collections.Generic.Dictionary<int, ZergRush.Samples.OtherData> other, ZRUpdateFromHelper __helper) 
     {
         if (other.Count == 0) { self.Clear(); return; }
@@ -2064,7 +2309,7 @@ public static partial class SerializationExtensions
     }
     public static ZergRush.Samples.CustomStruct ReadZergRush_Samples_CustomStruct(this ZRBinaryReader reader) 
     {
-        var self = new ZergRush.Samples.CustomStruct();
+        var self = default(ZergRush.Samples.CustomStruct);
         self.id = reader.ReadInt32();
         if (!reader.ReadBoolean()) {
             self.name = null;
@@ -2206,7 +2451,7 @@ public static partial class SerializationExtensions
     }
     public static ZergRush.Samples.CustomStruct ReadFromJsonZergRush_Samples_CustomStruct(this ZRJsonTextReader reader) 
     {
-        var self = new ZergRush.Samples.CustomStruct();
+        var self = default(ZergRush.Samples.CustomStruct);
         while (reader.Read())
         {
             if (reader.TokenType == JsonToken.PropertyName)

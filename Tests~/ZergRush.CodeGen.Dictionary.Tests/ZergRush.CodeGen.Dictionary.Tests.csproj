@@ -6,7 +6,7 @@
     <IsPackable>false</IsPackable>
     <GeneratedCodeDir>$(MSBuildProjectDirectory)\Generated</GeneratedCodeDir>
     <SampleFile>$(MSBuildProjectDirectory)\DictionaryUpdateFromSample.cs</SampleFile>
-    <CodeGenCliDll>$(MSBuildProjectDirectory)/../../src/ZergRush.CodeGen.Cli/bin/$(Configuration)/net10.0/ZergRush.CodeGen.Cli.dll</CodeGenCliDll>
+    <CodeGenCliDll>$(MSBuildProjectDirectory)/../../src/ZergRush.CodeGen.Cli/bin~/$(Configuration)/net10.0/ZergRush.CodeGen.Cli.dll</CodeGenCliDll>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(GeneratedCodeDir)\**</DefaultItemExcludes>
   </PropertyGroup>
 

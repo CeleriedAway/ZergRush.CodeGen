@@ -25,7 +25,7 @@ namespace ZergRush.CodeGen
                 }
 
                 if ((current.Options & ZRTypeOption.DoNotInheritGenTags) != 0) break;
-                current = current.BaseType;
+                current = current.GenerationMetadataParent();
             }
 
             return null;
@@ -39,9 +39,9 @@ namespace ZergRush.CodeGen
             if (genFlagsCache.TryGetValue(t, out var flagsCached)) return flagsCached;
 
             var flags = t.Flags;
-            if ((t.Options & ZRTypeOption.DoNotInheritGenTags) == 0 && t.BaseType != null)
+            if ((t.Options & ZRTypeOption.DoNotInheritGenTags) == 0 && t.GenerationMetadataParent() is { } parent)
             {
-                flags |= t.BaseType.ReadGenFlags();
+                flags |= parent.ReadGenFlags();
             }
 
             flags &= ~t.IgnoreFlags;
@@ -51,7 +51,7 @@ namespace ZergRush.CodeGen
 
         public static GenTaskFlags ReadGenCustomFlags(this Type t)
         {
-            return t.CustomImplementFlags;
+            return t.CustomImplementFlags | (t.GenericDefinition?.CustomImplementFlags ?? GenTaskFlags.None);
         }
 
         static bool CanPerform(this Type t, GenTaskFlags flags)

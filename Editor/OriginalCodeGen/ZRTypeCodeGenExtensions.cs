@@ -9,6 +9,14 @@ namespace ZergRush.CodeGen
 {
     public static class ZRTypeCodeGenExtensions
     {
+        public static ZRType? GenerationMetadataParent(this ZRType? type)
+        {
+            if (type == null) return null;
+            return type.IsConstructedGenericType && type.GenericDefinition != null
+                ? type.GenericDefinition
+                : type.BaseType;
+        }
+
         public static bool HasAttribute<T>(this ZRType? type, bool inherit = false) where T : Attribute
         {
             return type.GetAttributeInfo<T>(inherit) != null;
@@ -43,7 +51,7 @@ namespace ZergRush.CodeGen
                 var attr = current.Attributes.FirstOrDefault(attribute => AttributeNameMatches<T>(attribute));
                 if (attr != null) return attr;
                 if (!inherit || (current.Options & ZRTypeOption.DoNotInheritGenTags) != 0) return null;
-                current = current.BaseType;
+                current = current.GenerationMetadataParent();
             }
 
             return null;
@@ -68,7 +76,7 @@ namespace ZergRush.CodeGen
                 var attr = current.GetAttribute<T>(false);
                 if (attr != null && (ReferenceEquals(current, type) || validInheritance(attr))) return attr;
                 if ((current.Options & ZRTypeOption.DoNotInheritGenTags) != 0) break;
-                current = current.BaseType;
+                current = current.GenerationMetadataParent();
             }
 
             return null;
@@ -91,7 +99,7 @@ namespace ZergRush.CodeGen
                 }
 
                 if (!inherit || (current.Options & ZRTypeOption.DoNotInheritGenTags) != 0) yield break;
-                current = current.BaseType;
+                current = current.GenerationMetadataParent();
             }
         }
 
@@ -122,7 +130,8 @@ namespace ZergRush.CodeGen
 
         public static bool IsList(this ZRType? type)
         {
-            return type?.CommonConstruct == ZRCommonConstruct.List || type.IsReactiveCollection();
+            return type?.CommonConstruct == ZRCommonConstruct.List || type.IsReactiveCollection() ||
+                   type.IsConfigStorageList() || type.IsConfigStorageSlot();
         }
 
         public static bool IsReactiveCollection(this ZRType? type)
@@ -132,8 +141,36 @@ namespace ZergRush.CodeGen
 
         public static bool IsDictionary(this ZRType? type)
         {
-            return type?.CommonConstruct == ZRCommonConstruct.Dictionary ||
-                   type?.Name.StartsWith("ConfigStorageDict", StringComparison.Ordinal) == true;
+            return type?.CommonConstruct == ZRCommonConstruct.Dictionary || type.IsConfigStorageDict();
+        }
+
+        public static bool IsConfigStorage(this ZRType? type)
+        {
+            return type.IsConfigStorageList() || type.IsConfigStorageDict() || type.IsConfigStorageSlot();
+        }
+
+        public static bool IsConfigStorageList(this ZRType? type)
+        {
+            return type.IsNamedGenericType("ZergRush.Alive", "ConfigStorageList");
+        }
+
+        public static bool IsConfigStorageDict(this ZRType? type)
+        {
+            return type.IsNamedGenericType("ZergRush.Alive", "ConfigStorageDict");
+        }
+
+        public static bool IsConfigStorageSlot(this ZRType? type)
+        {
+            return type.IsNamedGenericType("ZergRush.Alive", "ConfigStorageSlot");
+        }
+
+        static bool IsNamedGenericType(this ZRType? type, string @namespace, string name)
+        {
+            if (type == null || !type.IsGenericType) return false;
+            var definition = type.IsConstructedGenericType && type.GenericDefinition != null
+                ? type.GenericDefinition
+                : type;
+            return definition.Namespace == @namespace && definition.ClearName() == name;
         }
 
         public static bool IsCollection(this ZRType? type)

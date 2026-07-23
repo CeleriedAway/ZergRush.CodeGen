@@ -10,7 +10,7 @@
     <CoverageSamplesFile>$(MSBuildProjectDirectory)\CodeGenCoverageSamples.cs</CoverageSamplesFile>
     <DictionarySamplesFile>$(MSBuildProjectDirectory)\DictionaryUpdateFromSample.cs</DictionarySamplesFile>
     <UnityStubsFile>$(MSBuildProjectDirectory)\UnityEngineStubs.cs</UnityStubsFile>
-    <CodeGenCliDll>$(MSBuildProjectDirectory)/../../src/ZergRush.CodeGen.Cli/bin/$(Configuration)/net10.0/ZergRush.CodeGen.Cli.dll</CodeGenCliDll>
+    <CodeGenCliDll>$(MSBuildProjectDirectory)/../../src/ZergRush.CodeGen.Cli/bin~/$(Configuration)/net10.0/ZergRush.CodeGen.Cli.dll</CodeGenCliDll>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(GeneratedCodeDir)\**</DefaultItemExcludes>
   </PropertyGroup>
 

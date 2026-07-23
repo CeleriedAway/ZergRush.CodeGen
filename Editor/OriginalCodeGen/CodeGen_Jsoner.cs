@@ -250,6 +250,7 @@ namespace ZergRush.CodeGen
                 // Reader
                 JsonAssertReadStartStatement(sinkReader, $"reader.TokenType != JsonToken.StartArray");
                 if (type.IsLivableList()) sinkReader.content($"self.{updatemod} = true;");
+                if (type.IsConfigStorageSlot()) sinkReader.content($"{accessPrefix}.Clear();");
                 if (type.IsArray)
                     sinkReader.content(
                         $"if(self == null || self.Length > 0) self = Array.Empty<{elemType.RealName(true)}>();");

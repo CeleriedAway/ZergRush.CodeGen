@@ -169,7 +169,7 @@ public unsafe static class CodeGenImplTools
                     goto check;
                 }
                 // move item to right position
-                var selfItem = self.TakeAt(selfMatchingItemIndex);
+                var selfItem = ZergRush.CodeGen.CodeGenCollectionFormatting.TakeAt(self, selfMatchingItemIndex);
                 selfItem = updateFunc(self[i], currOtherItem, self, __helper);
                 self.Insert(i, selfItem);
             }

@@ -183,6 +183,8 @@ public sealed class ZRCodeParser
         var normalized = path.Replace('\\', '/');
         return normalized.Contains("/bin/", StringComparison.OrdinalIgnoreCase) ||
                normalized.Contains("/obj/", StringComparison.OrdinalIgnoreCase) ||
+               normalized.Contains("/bin~/", StringComparison.OrdinalIgnoreCase) ||
+               normalized.Contains("/obj~/", StringComparison.OrdinalIgnoreCase) ||
                IsGeneratedSourcePath(path);
     }
 
@@ -845,10 +847,23 @@ public sealed class ZRCodeParser
                 !ctor.IsImplicitlyDeclared && ctor.Parameters.Length == 0)
         };
 
+        // This enum may be supplied by a referenced assembly because its source file
+        // is excluded from the current generator input. Keep Roslyn's real storage
+        // type instead of defaulting enum serialization to Int32.
+        if (symbol.TypeKind == TypeKind.Enum && symbol.EnumUnderlyingType != null)
+        {
+            type.EnumUnderlyingType = TypeFromSymbol(symbol.EnumUnderlyingType);
+        }
+
         typesByFullName[fullName] = type;
 
         type.GenericArguments = symbol.TypeArguments.Select(t => TypeFromSymbol(t)).ToList();
         type.CommonConstructArgType = type.GenericArguments.FirstOrDefault();
+        if (symbol.DeclaringSyntaxReferences.Length == 0 && (!symbol.IsGenericType || symbol.IsDefinition))
+        {
+            type.Attributes.AddRange(symbol.GetAttributes().Select(AttributeFromData));
+            ApplyTypeAttributes(type);
+        }
         if (symbol.NullableAnnotation == NullableAnnotation.Annotated && symbol.IsValueType)
         {
             type.CommonConstruct = ZRCommonConstruct.Nullable;
@@ -1137,9 +1152,10 @@ public sealed class ZRCodeParser
                     {
                         Flags = FirstArg<GenTaskFlags>(attribute),
                         GenerateBaseMethods = ArgAt(attribute, 1, false),
-                        Inheritable = ArgAt(attribute, 2, true)
+                        Inheritable = ArgAt(attribute, 2, false)
                     };
                     type.CustomImplementations.Add(custom);
+                    type.Flags |= custom.Flags;
                     type.CustomImplementFlags |= custom.Flags;
                     type.Options |= ZRTypeOption.HasCustomImplementation;
                     break;

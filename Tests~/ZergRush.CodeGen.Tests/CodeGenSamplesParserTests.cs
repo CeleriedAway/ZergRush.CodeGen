@@ -106,6 +106,61 @@ public sealed class CodeGenSamplesParserTests
     }
 
     [Fact]
+    public void Closed_generic_base_inherits_custom_generation_tags_from_its_definition()
+    {
+        var expectedFlags = GenTaskFlags.ConfigData & ~GenTaskFlags.PolymorphicConstruction;
+        var types = ParseSource("""
+            using ZergRush.CodeGen;
+
+            namespace ParserSamples;
+
+            [GenTaskCustomImpl(GenTaskFlags.ConfigData & ~GenTaskFlags.PolymorphicConstruction)]
+            public abstract partial class GenericRoot<T> where T : GenericRoot<T>, new()
+            {
+            }
+
+            public partial class ConcreteRoot : GenericRoot<ConcreteRoot>
+            {
+                public int value;
+            }
+            """);
+
+        var definition = FindType(types, "ParserSamples.GenericRoot<T>");
+        var concrete = FindType(types, "ParserSamples.ConcreteRoot");
+
+        Assert.Equal(expectedFlags, definition.Flags);
+        Assert.True(concrete.BaseType!.IsConstructedGenericType);
+        Assert.Same(definition, concrete.BaseType.GenericDefinition);
+        Assert.Equal(expectedFlags, concrete.ReadGenFlags());
+
+        Assert.NotNull(definition.GetCustomImplAttr());
+        Assert.Null(concrete.GetCustomImplAttr());
+    }
+
+    [Fact]
+    public void Closed_generic_base_inherits_generation_tags_from_external_definition()
+    {
+        var expectedFlags = GenTaskFlags.ConfigData & ~GenTaskFlags.PolymorphicConstruction;
+        var types = ParseSource("""
+            using ZergRush.Alive;
+
+            namespace ParserSamples;
+
+            public partial class ExternalConfig : GameConfigRoot<ExternalConfig>
+            {
+                public int value;
+            }
+            """);
+
+        var concrete = FindType(types, "ParserSamples.ExternalConfig");
+
+        Assert.True(concrete.BaseType!.IsConstructedGenericType);
+        Assert.Equal("ZergRush.Alive.GameConfigRoot<T>", concrete.BaseType.GenericDefinition?.FullName);
+        Assert.Equal(expectedFlags, concrete.ReadGenFlags());
+        Assert.Null(concrete.GetCustomImplAttr());
+    }
+
+    [Fact]
     public void Generic_instance_attribute_resolves_CSharp_type_syntax_in_declaration_context()
     {
         var types = ParseSource("""
@@ -237,6 +292,35 @@ public sealed class CodeGenSamplesParserTests
         {
             Directory.Delete(root, true);
         }
+    }
+
+    [Fact]
+    public void Config_storage_wrappers_are_classified_as_collections()
+    {
+        var types = ParseSource("""
+            using ZergRush.Alive;
+
+            namespace ParserSamples;
+
+            public class StorageOwner
+            {
+                public ConfigStorageList<LoadableConfig> list = new();
+                public ConfigStorageDict<string, LoadableConfig> dictionary = new();
+                public ConfigStorageSlot<LoadableConfig> slot = new();
+            }
+            """);
+
+        var owner = Assert.Single(types, type => type.FullName == "ParserSamples.StorageOwner");
+        var list = FindMember(owner, "list").DeclaredType;
+        var dictionary = FindMember(owner, "dictionary").DeclaredType;
+        var slot = FindMember(owner, "slot").DeclaredType;
+
+        Assert.True(list.IsList());
+        Assert.True(dictionary.IsDictionary());
+        Assert.True(slot.IsList());
+        Assert.True(list.IsConfigStorage());
+        Assert.True(dictionary.IsConfigStorage());
+        Assert.True(slot.IsConfigStorage());
     }
 
     static IReadOnlyList<ZRType> ParseCodeGenSamples()

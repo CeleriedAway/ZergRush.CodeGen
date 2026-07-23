@@ -5,6 +5,47 @@ namespace ZergRush.CodeGen.Tests;
 public sealed class GeneratedCodeBehaviorTests
 {
     [Fact]
+    public void Config_storage_collections_round_trip_owned_elements()
+    {
+        var source = new ConfigStorageCoverageSamples();
+        source.list.Add(new ConfigStorageCoverageItem { configId = 1, payload = 11 });
+        source.dictionary.Add("two", new ConfigStorageCoverageItem { configId = 2, payload = 22 });
+        source.slot.value = new ConfigStorageCoverageItem { configId = 3, payload = 33 };
+
+        ConfigStorageCoverageRoot.Instance.Reset();
+        var binary = source.WriteToByteArray().Read<ConfigStorageCoverageSamples>();
+        ConfigStorageCoverageRoot.Instance.Reset();
+        var json = source.WriteToJsonString().ReadFromJson<ConfigStorageCoverageSamples>();
+        var copy = new ConfigStorageCoverageSamples();
+        ConfigStorageCoverageRoot.Instance.Reset();
+        copy.UpdateFrom(source, new ZRUpdateFromHelper());
+
+        AssertStorageValues(binary);
+        AssertStorageValues(json);
+        Assert.NotSame(source.list[0], binary.list[0]);
+        Assert.NotSame(source.dictionary["two"], binary.dictionary["two"]);
+        Assert.NotSame(source.slot.value, binary.slot.value);
+        Assert.NotSame(source.list[0], json.list[0]);
+        Assert.NotSame(source.dictionary["two"], json.dictionary["two"]);
+        Assert.NotSame(source.slot.value, json.slot.value);
+
+        AssertStorageValues(copy);
+        Assert.Same(source.list[0], copy.list[0]);
+        Assert.Same(source.dictionary["two"], copy.dictionary["two"]);
+        Assert.Same(source.slot.value, copy.slot.value);
+    }
+
+    static void AssertStorageValues(ConfigStorageCoverageSamples actual)
+    {
+        Assert.Single(actual.list);
+        Assert.Single(actual.dictionary);
+        Assert.Single(actual.slot);
+        Assert.Equal(11, actual.list[0].payload);
+        Assert.Equal(22, actual.dictionary["two"].payload);
+        Assert.Equal(33, actual.slot.value.payload);
+    }
+
+    [Fact]
     public void UpdateFrom_copies_generated_data_members()
     {
         var source = new OtherData { someData = 42 };

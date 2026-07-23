@@ -55,6 +55,35 @@ public partial class CodeGenCoverageSamples
     public ReactiveCollection<int> reactiveCollection = new();
 }
 
+[GenTask(
+    GenTaskFlags.Serialization |
+    GenTaskFlags.JsonSerialization |
+    GenTaskFlags.UpdateFrom |
+    GenTaskFlags.DefaultConstructor)]
+[GenInLocalFolder]
+public partial class ConfigStorageCoverageSamples
+{
+    public ConfigStorageList<ConfigStorageCoverageItem> list = new();
+    public ConfigStorageDict<string, ConfigStorageCoverageItem> dictionary = new();
+    public ConfigStorageSlot<ConfigStorageCoverageItem> slot = new();
+}
+
+public sealed class ConfigStorageCoverageRoot
+{
+    public static ConfigStorageCoverageRoot Instance { get; } = new();
+    public readonly List<LoadableConfig> registered = new();
+
+    public void RegisterConfig(LoadableConfig config) => registered.Add(config);
+    public void Reset() => registered.Clear();
+}
+
+[ConfigRootType(typeof(ConfigStorageCoverageRoot))]
+public partial class ConfigStorageCoverageItem : LoadableConfig
+{
+    [UIDComponent] public int configId;
+    public int payload;
+}
+
 [GenDoNotInheritGenTags]
 [GenTask(GenTaskFlags.DefaultConstructor | GenTaskFlags.LifeSupport | GenTaskFlags.OwnershipHierarchy)]
 [GenInLocalFolder]

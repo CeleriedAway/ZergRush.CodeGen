@@ -65,13 +65,6 @@ namespace ZergRush.CodeGen
             }
         }
 
-        public static bool IsConfigStorage(this Type t)
-        {
-            return t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(ConfigStorageList<>) ||
-                                       t.GetGenericTypeDefinition() == typeof(ConfigStorageDict<,>) ||
-                                       t.GetGenericTypeDefinition() == typeof(ConfigStorageSlot<>));
-        }
-
         public static void SinkListWriterCode(Type listType, MethodBuilder sink, Type elementType,
             string access, string stream)
         {
@@ -238,6 +231,7 @@ namespace ZergRush.CodeGen
         {
             string count = listType.IsList() ? "Count" : "Length";
             if (listType.IsLivableList()) sink.content($"{path}.{updatemod} = true;");
+            if (listType.IsConfigStorageSlot()) sink.content($"{path}.Clear();");
 
             sink.content($"var size = {stream}.ReadInt32();");
             sink.SinkCountCheck("size");

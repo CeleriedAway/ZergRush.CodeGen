@@ -7,12 +7,16 @@
     <Version>0.1.0-preview.1</Version>
     <RepositoryUrl>https://github.com/CeleriedAway/ZergRush</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <!-- Unity imports managed assemblies from ordinary package folders.
+         Keep normal SDK artifacts in tilde-suffixed folders, which Unity ignores. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)\bin\**\*;$(MSBuildProjectDirectory)\obj\**\*;$(MSBuildProjectDirectory)\bin~\**\*;$(MSBuildProjectDirectory)\obj~\**\*</DefaultItemExcludes>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ZergRushUnityBuildRoot)' == ''">
+    <BaseOutputPath>$(MSBuildProjectDirectory)\bin~\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildProjectDirectory)\obj~\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(MSBuildProjectDirectory)\obj~\</MSBuildProjectExtensionsPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(ZergRushUnityBuildRoot)' != ''">
-    <!-- BaseIntermediateOutputPath normally supplies the SDK's obj exclusion.
-         When Unity redirects it, retain explicit exclusions for local artifacts
-         left by regular dotnet builds. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)\bin\**\*;$(MSBuildProjectDirectory)\obj\**\*</DefaultItemExcludes>
     <BaseOutputPath>$(ZergRushUnityBuildRoot)\bin\$(MSBuildProjectName)\</BaseOutputPath>
     <BaseIntermediateOutputPath>$(ZergRushUnityBuildRoot)\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <MSBuildProjectExtensionsPath>$(ZergRushUnityBuildRoot)\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>

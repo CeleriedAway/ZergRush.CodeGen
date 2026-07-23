@@ -8,34 +8,38 @@ namespace ZergRush.CodeGen.Tests {
 
     public partial class LivableAddressLeaf
     {
-        public void Enlive() 
+        public override void Enlive() 
         {
             EnliveSelf();
             EnliveChildren();
         }
-        public void Mortify() 
+        public override void Mortify() 
         {
             MortifySelf();
             MortifyChildren();
         }
-        protected void EnliveChildren() 
+        protected override void EnliveChildren() 
         {
+            base.EnliveChildren();
 
         }
-        protected void MortifyChildren() 
+        protected override void MortifyChildren() 
         {
+            base.MortifyChildren();
 
         }
-        public void VisitNode(Action<object> action) 
+        public override void VisitNode(Action<object> action) 
         {
+            base.VisitNode(action);
 
         }
         public override ZergRush.Alive.ILivable GetLivableChild(int localChildId) 
         {
             return base.GetLivableChild(localChildId);
         }
-        public void __PropagateHierarchy() 
+        public override void __PropagateHierarchy() 
         {
+            base.__PropagateHierarchy();
 
         }
         public  LivableAddressLeaf() 
