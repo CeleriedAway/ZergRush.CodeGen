@@ -91,6 +91,47 @@ public sealed class CliArgumentsTests
         Assert.Throws<ArgumentException>(() => ZRCodeGenCliArguments.Parse(["-p", "Game.sln"]));
     }
 
+    [Fact]
+    public void Plugins_are_repeatable_resolved_and_deduplicated_in_argument_order()
+    {
+        using var tree = new TempTree();
+        var first = tree.Write("Plugins/First.dll", "");
+        var second = tree.Write("Plugins/Second.dll", "");
+        var options = ZRCodeGenCliArguments.Parse([
+            "-p", "Game.csproj",
+            "--generate", "Generated",
+            "--plugin", "Plugins/First.dll",
+            "--plugin", "Plugins/Second.dll",
+            "--plugin", "plugins/first.dll"
+        ]);
+
+        var resolved = options.ResolvePluginPaths(tree.Root);
+
+        Assert.Equal([first, second], resolved);
+    }
+
+    [Fact]
+    public void Plugins_require_generation_and_existing_dll_files()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            ZRCodeGenCliArguments.Parse(["-p", "Game.csproj", "--plugin", "Plugin.dll"]));
+
+        using var tree = new TempTree();
+        var options = ZRCodeGenCliArguments.Parse([
+            "-p", "Game.csproj",
+            "--generate", "Generated",
+            "--plugin", "Plugin.txt"
+        ]);
+        Assert.Throws<ArgumentException>(() => options.ResolvePluginPaths(tree.Root));
+
+        var missing = ZRCodeGenCliArguments.Parse([
+            "-p", "Game.csproj",
+            "--generate", "Generated",
+            "--plugin", "Missing.dll"
+        ]);
+        Assert.Throws<FileNotFoundException>(() => missing.ResolvePluginPaths(tree.Root));
+    }
+
     sealed class TempTree : IDisposable
     {
         public string Root { get; } = Path.Combine(Path.GetTempPath(), $"ZergRushCliTests_{Guid.NewGuid():N}");

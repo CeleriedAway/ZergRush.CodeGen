@@ -9,7 +9,8 @@ try
         return 0;
     }
 
-    var inputs = options.ResolveInputs(Environment.CurrentDirectory);
+    var workingDirectory = Environment.CurrentDirectory;
+    var inputs = options.ResolveInputs(workingDirectory);
     var parser = new ZRCodeParser();
     var types = parser.ParseInputs(inputs);
 
@@ -39,7 +40,16 @@ try
                         GenTaskFlags.Serialization);
                 }
             });
+        var pluginPaths = options.ResolvePluginPaths(workingDirectory);
+        var pluginEntryPoints = CodeGenPluginLoader.LoadAndConfigure(
+            pluginPaths,
+            session,
+            inputs,
+            workingDirectory,
+            options.GenerationOutput);
         session.Generate();
+        foreach (var entryPoint in pluginEntryPoints)
+            Console.WriteLine($"Executed CodeGen plugin entry point {entryPoint.EntryPoint} from {entryPoint.PluginPath}.");
         Console.WriteLine(options.PreserveTargetFolders
             ? $"Generated source using parsed target folders and {options.GenerationOutput} as fallback."
             : $"Generated source into {options.GenerationOutput}.");

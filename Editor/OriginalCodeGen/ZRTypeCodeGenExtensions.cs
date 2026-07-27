@@ -43,6 +43,16 @@ namespace ZergRush.CodeGen
             return member?.Attributes.Any(attribute => AttributeNameMatches(attribute, attributeName)) == true;
         }
 
+        public static bool HasAttributeName(this ZRType? type, string attributeName)
+        {
+            return type?.Attributes.Any(attribute => AttributeNameMatches(attribute, attributeName)) == true;
+        }
+
+        public static bool HasAttributeName(this ZRMethod? method, string attributeName)
+        {
+            return method?.Attributes.Any(attribute => AttributeNameMatches(attribute, attributeName)) == true;
+        }
+
         public static ZRAttributeInfo? GetAttributeInfo<T>(this ZRType? type, bool inherit = false) where T : Attribute
         {
             var current = type;
@@ -301,9 +311,19 @@ namespace ZergRush.CodeGen
             return type.Parents().FirstOrDefault(parent => parent.HasAttribute<T>());
         }
 
+        public static ZRType? ParentWithAttributeName(this ZRType type, string attributeName)
+        {
+            return type.Parents().FirstOrDefault(parent => parent.HasAttributeName(attributeName));
+        }
+
         public static T? FindTagInHierarchy<T>(this ZRType? type) where T : Attribute
         {
             return type.GetAttribute<T>(attribute => true);
+        }
+
+        public static ZRType? FindTypeWithAttributeNameInHierarchy(this ZRType? type, string attributeName)
+        {
+            return type.ParentsAndSelf().FirstOrDefault(current => current.HasAttributeName(attributeName));
         }
 
         public static string FileName(this ZRType type)

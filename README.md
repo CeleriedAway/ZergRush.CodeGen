@@ -23,6 +23,34 @@ zrgen --search-down -f "*.cs"
 
 Pass `--generate <directory>` to generate source. Generated types honor their parsed target folders by default, which places unannotated types in a local `x_generated` folder beside their source. The supplied directory is the fallback. Pass `--single-output-folder` to intentionally flatten every generated file into that fallback directory. Without `--generate`, the CLI parses and prints the resolved model, which is useful for validating a project or solution input before generation.
 
+## CLI plugins
+
+Pass one or more `--plugin <assembly.dll>` arguments to extend the same parsed generation batch:
+
+```shell
+zrgen -p Assembly-CSharp.csproj \
+  --plugin Tools/PluginA.dll \
+  --plugin Tools/PluginB.dll \
+  --generate Generated
+```
+
+Plugin paths are resolved from the CLI working directory, deduplicated in argument order, and require `--generate`. Plugins run with full trust and must target a runtime compatible with the `net10.0` CLI.
+
+Expose one or more public entry points from the plugin assembly:
+
+```csharp
+public static class MyCodeGenPlugin
+{
+    [CodeGenPluginEntryPoint]
+    public static void Configure(CodeGenPluginContext context)
+    {
+        context.AddGenerator(MyGenerator.Generate);
+    }
+}
+```
+
+An entry point must be public, static, non-generic, return `void`, and accept exactly one `CodeGenPluginContext`. The context exposes the parsed types, resolved inputs, working directory, and output directory. All plugins configure one `CodeGenSession`; the CLI invokes `Generate()` once after every entry point has registered its generators.
+
 ## Using CodeGen as a Unity editor library
 
 Unity editor generators can build the same `ZRType` model used by the source parser and run explicit generators without `CodeGenExtension` discovery:

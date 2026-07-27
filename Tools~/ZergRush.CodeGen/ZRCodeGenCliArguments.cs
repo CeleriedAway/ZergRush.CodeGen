@@ -33,6 +33,7 @@ public sealed class ZRCodeGenCliArguments
 
         Generation:
               --generate <directory>     Generate code using this fallback output directory
+              --plugin <assembly.dll>    Load a CodeGen plugin; repeatable, requires --generate
               --preserve-target-folders  Honor parsed target folders (the default)
               --single-output-folder     Put every generated file in --generate directory
           -h, --help                     Show this help
@@ -49,6 +50,7 @@ public sealed class ZRCodeGenCliArguments
     public bool ShowHelp { get; private set; }
     public ZRCodeGenSearchMode SearchMode { get; private set; }
     public List<ZRCodeGenInput> Inputs { get; } = [];
+    public List<string> PluginPaths { get; } = [];
 
     public static ZRCodeGenCliArguments Parse(IReadOnlyList<string> args)
     {
@@ -76,6 +78,9 @@ public sealed class ZRCodeGenCliArguments
                 case "--generate":
                     result.GenerationOutput = Path.GetFullPath(RequiredValue(args, ref i, "--generate"));
                     break;
+                case "--plugin":
+                    result.PluginPaths.Add(RequiredValue(args, ref i, "--plugin"));
+                    break;
                 case "-f":
                 case "--file":
                     result.AddInput(ZRCodeGenInputKind.File, OptionalPattern(args, ref i, "*.cs"));
@@ -95,8 +100,29 @@ public sealed class ZRCodeGenCliArguments
 
         if (!result.ShowHelp && result.Inputs.Count == 0)
             throw new ArgumentException("At least one -f, -p, or -s input is required.");
+        if (!result.ShowHelp && result.PluginPaths.Count > 0 && result.GenerationOutput == null)
+            throw new ArgumentException("--plugin requires --generate so all plugin generators can run in one generation batch.");
 
         return result;
+    }
+
+    public IReadOnlyList<string> ResolvePluginPaths(string workingDirectory)
+    {
+        var root = Path.GetFullPath(workingDirectory);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var resolved = new List<string>();
+        foreach (var pluginPath in PluginPaths)
+        {
+            if (!pluginPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException($"CodeGen plugin '{pluginPath}' must be a .dll file.");
+
+            var fullPath = Path.GetFullPath(Path.Combine(root, pluginPath));
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException($"CodeGen plugin assembly does not exist: {fullPath}", fullPath);
+            if (seen.Add(fullPath)) resolved.Add(fullPath);
+        }
+
+        return resolved;
     }
 
     public IReadOnlyList<string> ResolveInputs(string workingDirectory)
