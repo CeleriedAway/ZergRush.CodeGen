@@ -708,6 +708,14 @@ public sealed class ZRCodeParser
                 !ctor.IsImplicitlyDeclared && ctor.Parameters.Length == 0)
         };
 
+        // An enum can come from a referenced assembly (for example, a source file that
+        // is intentionally excluded from the current generator input). Preserve its
+        // storage width from Roslyn instead of falling back to Int32 during emission.
+        if (symbol.TypeKind == TypeKind.Enum && symbol.EnumUnderlyingType != null)
+        {
+            type.EnumUnderlyingType = TypeFromSymbol(symbol.EnumUnderlyingType);
+        }
+
         typesByFullName[fullName] = type;
 
         type.GenericArguments = symbol.TypeArguments.Select(t => TypeFromSymbol(t)).ToList();
