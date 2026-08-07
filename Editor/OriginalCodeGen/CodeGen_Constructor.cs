@@ -130,7 +130,7 @@ namespace ZergRush.CodeGen
 
                 var declaredType = member.DeclaredType ?? info.Type;
                 CreateNewInstance(constructor, declaredType, declaredAccess, null, null, false,
-                    info.CantBeAncestor, declaredType.IsCell() ? null : member.DefaultValue, t);
+                    info.CantBeAncestor, member.DefaultValue, t);
                 InitializeWrappedValues(constructor, member, declaredAccess, info);
             }, GenericMembers(constructor));
 
