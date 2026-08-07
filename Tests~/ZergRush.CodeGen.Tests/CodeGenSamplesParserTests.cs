@@ -235,6 +235,29 @@ public sealed class CodeGenSamplesParserTests
     }
 
     [Fact]
+    public void Enum_underlying_type_is_preserved_for_binary_codegen()
+    {
+        var types = ParseSource("""
+            namespace ParserSamples;
+
+            public enum UShortEnum : ushort
+            {
+                Value = 1
+            }
+
+            public class EnumOwner
+            {
+                public UShortEnum value;
+            }
+            """);
+
+        var enumType = FindType(types, "ParserSamples.UShortEnum");
+        Assert.Equal("ushort", enumType.GetEnumUnderlyingType().FullName);
+        Assert.Equal("ushort", FindMember(FindType(types, "ParserSamples.EnumOwner"), "value")
+            .Type.GetEnumUnderlyingType().FullName);
+    }
+
+    [Fact]
     public void Generic_instance_attribute_rejects_invalid_usage()
     {
         var misplaced = Assert.Throws<InvalidOperationException>(() => ParseSource("""

@@ -847,9 +847,9 @@ public sealed class ZRCodeParser
                 !ctor.IsImplicitlyDeclared && ctor.Parameters.Length == 0)
         };
 
-        // This enum may be supplied by a referenced assembly because its source file
-        // is excluded from the current generator input. Keep Roslyn's real storage
-        // type instead of defaulting enum serialization to Int32.
+        // An enum can come from a referenced assembly (for example, a source file that
+        // is intentionally excluded from the current generator input). Preserve its
+        // storage width from Roslyn instead of falling back to Int32 during emission.
         if (symbol.TypeKind == TypeKind.Enum && symbol.EnumUnderlyingType != null)
         {
             type.EnumUnderlyingType = TypeFromSymbol(symbol.EnumUnderlyingType);

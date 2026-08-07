@@ -130,7 +130,7 @@ namespace ZergRush.CodeGen
 
                 var declaredType = member.DeclaredType ?? info.Type;
                 CreateNewInstance(constructor, declaredType, declaredAccess, null, null, false,
-                    info.CantBeAncestor, member.DefaultValue, t);
+                    info.CantBeAncestor, declaredType.IsCell() ? null : member.DefaultValue, t);
                 InitializeWrappedValues(constructor, member, declaredAccess, info);
             }, GenericMembers(constructor));
 
@@ -200,7 +200,9 @@ namespace ZergRush.CodeGen
                 if (nextWrapper == FieldWrapperType.Nullable) return;
                 if (!info.CanBeNull && !info.Type.IsValueType)
                 {
-                    constructor.content($"{access}.value = {info.Type.NewInstExpr()};");
+                    var valueInitializer = info.Type.NewInstExpr();
+                    if (!valueInitializer.StartsWith("default(", StringComparison.Ordinal))
+                        constructor.content($"{access}.value = {valueInitializer};");
                 }
                 return;
             }
