@@ -16,6 +16,13 @@ namespace ZergRush.CodeGen
     {
     }
 
+    // for loadable configs
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class GenThrowIfConfigNotFound : Attribute
+    {
+
+    }
+
     // Allow this class instance be presented in multiple places and be serialized properly.
     [AttributeUsage(AttributeTargets.Class)]
     public class GenMultipleRefs : Attribute

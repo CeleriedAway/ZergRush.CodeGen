@@ -5,6 +5,33 @@ namespace ZergRush.CodeGen.Tests;
 
 public sealed class CodeGenCoverageTests
 {
+    [Fact]
+    public void Config_references_allow_missing_values_unless_marked_required()
+    {
+        var registeredConfig = new ConfigReferenceItem { configId = 1 };
+        ConfigReferenceRoot.SetGameConfig(root => root.RegisterConfig(registeredConfig));
+        var missingConfig = new ConfigReferenceItem { configId = 2 };
+        var optionalSource = new ConfigReferenceHolder
+        {
+            optionalReference = missingConfig,
+            requiredReference = registeredConfig
+        };
+
+        var optionalRestored = optionalSource.WriteToByteArray().Read<ConfigReferenceHolder>();
+
+        Assert.Null(optionalRestored.optionalReference);
+        Assert.Same(registeredConfig, optionalRestored.requiredReference);
+
+        var requiredSource = new ConfigReferenceHolder
+        {
+            optionalReference = registeredConfig,
+            requiredReference = missingConfig
+        };
+        var exception = Assert.Throws<ZergRushException>(() => requiredSource.WriteToByteArray().Read<ConfigReferenceHolder>());
+
+        Assert.Contains("not registerred in game config", exception.Message);
+    }
+
     public static IEnumerable<object[]> Scenarios()
     {
         yield return ["default", CodeGenCoverageSamples.CreateEmptyForTests()];

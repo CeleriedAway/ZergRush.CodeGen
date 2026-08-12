@@ -54,7 +54,7 @@ public enum ZRTypeOption
     HasGenIgnore = 1 << 14,
     External = 1 << 15,
     GenericDefinition = 1 << 16,
-    ConstructedGeneric = 1 << 17
+    ConstructedGeneric = 1 << 17,
 }
 
 [Flags]
@@ -70,7 +70,8 @@ public enum ZRMemberOption
     HasArrayLengthConstraint = 1 << 6,
     UnconstrainedArrayLength = 1 << 7,
     HasGenInclude = 1 << 8,
-    HasGenIgnore = 1 << 9
+    HasGenIgnore = 1 << 9,
+    ThrowIfConfigNotFound = 1 << 10,
 }
 
 public enum ZRMemberKind
@@ -104,6 +105,7 @@ public enum ZRDataOption
     CantBeAncestor = 1 << 6,
     Immutable = 1 << 7,
     IsNullable = 1 << 8,
+    ConfigMustExist = 1 << 9,
 }
 
 public enum FieldWrapperType
@@ -686,6 +688,11 @@ public class ZRMember
             WrapperTypes.Contains(FieldWrapperType.LivableSlot))
         {
             options |= ZRDataOption.CanBeNull;
+        }
+
+        if ((Options & ZRMemberOption.ThrowIfConfigNotFound) != 0)
+        {
+            options |= ZRDataOption.ConfigMustExist;
         }
 
         if ((Options & ZRMemberOption.JustData) != 0)

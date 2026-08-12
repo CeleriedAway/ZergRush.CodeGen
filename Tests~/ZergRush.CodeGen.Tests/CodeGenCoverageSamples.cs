@@ -84,6 +84,26 @@ public partial class ConfigStorageCoverageItem : LoadableConfig
     public int payload;
 }
 
+[GenTask(GenTaskFlags.Serialization)]
+[GenInLocalFolder]
+[ConfigRootType(typeof(ConfigReferenceRoot))]
+public partial class ConfigReferenceHolder
+{
+    [CanBeNull] public ConfigReferenceItem optionalReference = null!;
+    [GenThrowIfConfigNotFound] public ConfigReferenceItem requiredReference = null!;
+}
+
+[GenInLocalFolder]
+public partial class ConfigReferenceRoot : GameConfigRoot<ConfigReferenceRoot>
+{
+}
+
+[GenInLocalFolder]
+public partial class ConfigReferenceItem : LoadableConfig
+{
+    [UIDComponent] public int configId;
+}
+
 [GenDoNotInheritGenTags]
 [GenTask(GenTaskFlags.DefaultConstructor | GenTaskFlags.LifeSupport | GenTaskFlags.OwnershipHierarchy)]
 [GenInLocalFolder]

@@ -254,7 +254,7 @@ public sealed class CodeGenSamplesParserTests
         var enumType = FindType(types, "ParserSamples.UShortEnum");
         Assert.Equal("ushort", enumType.GetEnumUnderlyingType().FullName);
         Assert.Equal("ushort", FindMember(FindType(types, "ParserSamples.EnumOwner"), "value")
-            .Type.GetEnumUnderlyingType().FullName);
+            .MemberType.GetEnumUnderlyingType().FullName);
     }
 
     [Fact]

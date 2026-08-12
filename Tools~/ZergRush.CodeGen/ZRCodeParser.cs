@@ -1301,6 +1301,9 @@ public sealed class ZRCodeParser
                     member.Options |= ZRMemberOption.HasGenIgnore;
                     member.IgnoreFlags = ArgAt(attribute, 0, GenTaskFlags.All);
                     break;
+                case "GenThrowIfConfigNotFound":
+                    member.Options |= ZRMemberOption.ThrowIfConfigNotFound;
+                    break;
             }
         }
     }

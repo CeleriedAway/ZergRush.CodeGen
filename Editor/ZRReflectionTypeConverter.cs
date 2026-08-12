@@ -298,6 +298,9 @@ namespace ZergRush.CodeGen
                         member.Options |= ZRMemberOption.HasGenIgnore;
                         member.IgnoreFlags = AttributeFlags(attribute, GenTaskFlags.All);
                         break;
+                    case "GenThrowIfConfigNotFound":
+                        member.Options |= ZRMemberOption.ThrowIfConfigNotFound;
+                        break;
                 }
             }
         }

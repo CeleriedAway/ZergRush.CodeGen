@@ -427,8 +427,8 @@ namespace ZergRush.CodeGen
                 //return;
             }
 
-            sink.content(
-                $"{OptVar(needCreateVar)}{info.Access} = ({info.Type.RealName(true)}){configType.NameWithNamespace()}.GetConfig({idReader(type)});");
+            var getter = info.HasOption(ZRDataOption.ConfigMustExist) ? "GetConfig" : "TryGetConfig";
+            sink.content($"{OptVar(needCreateVar)}{info.Access} = ({info.Type.RealName(true)}){configType.NameWithNamespace()}.{getter}({idReader(type)});");
         }
     }
 }

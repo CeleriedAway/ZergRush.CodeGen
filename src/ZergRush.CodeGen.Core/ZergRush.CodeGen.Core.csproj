@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="ZergRush.Reactive" Version="0.1.0-preview.1" />
   </ItemGroup>
   <ItemGroup Condition="'$(ZergRushReactiveProjectPath)' != ''">
     <ProjectReference Include="$(ZergRushReactiveProjectPath)" />
