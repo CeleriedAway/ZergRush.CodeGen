@@ -37,6 +37,8 @@ namespace ZergRush.CodeGen
         
         static void GenerateConstructionFromRoot(Type type)
         {
+            // Open generic declarations cannot appear in a non-generic root factory.
+            if (type.IsGenericType && type.GetGenericArguments().Any(argument => argument.IsGenericParameter)) return;
             var rootType = type.ParentsAndSelf().Select(candidate => candidate.RootType).FirstOrDefault(root => root != null);
             if (rootType == null) return;
             

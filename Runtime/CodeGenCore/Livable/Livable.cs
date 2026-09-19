@@ -13,7 +13,8 @@ namespace ZergRush.Alive
      *     So you never call Enlive methods manually, unless it is root object
      */
     [GenTask(GenTaskFlags.LivableNodePack & ~GenTaskFlags.PolymorphicConstruction), GenZergRushFolder()]
-    public abstract partial class Livable : IConnectionSink, ILivable
+    public abstract partial class Livable : IConnectionSink, ILivable, IBinarySerializable, IBinaryDeserializable,
+        IHashable, IJsonSerializable, ICompareCheckable<Livable>
     {
         [GenIgnore] bool dead;
         [GenIgnore] public LivableRoot root;
@@ -114,6 +115,15 @@ namespace ZergRush.Alive
         public virtual void UpdateFrom(Livable other, ZRUpdateFromHelper __helper)
         {
         }
+
+        // The runtime base owns no persistent fields. Derived source-generated models
+        // override these contracts without generating partial classes into the runtime assembly.
+        public virtual void Serialize(ZRBinaryWriter writer) { }
+        public virtual void Deserialize(ZRBinaryReader reader) { }
+        public virtual ulong CalculateHash(ZRHashHelper helper) => 345093625;
+        public virtual void CompareCheck(Livable other, ZRCompareCheckHelper helper, Action<string> printer) { }
+        public virtual bool ReadFromJsonField(ZRJsonTextReader reader, string name) => false;
+        public virtual void WriteJsonFields(ZRJsonTextWriter writer) { }
 
         public virtual void __PropagateHierarchy()
         {

@@ -33,11 +33,23 @@ public sealed class ZRCodeParser
 
     public IReadOnlyList<ZRType> ParseInputs(IEnumerable<string> inputs)
     {
-        var files = ExpandInputFiles(inputs);
-        return ParseFiles(files);
+        var inputList = inputs.ToArray();
+        var files = ExpandInputFiles(inputList);
+        var references = inputList.Where(path => path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) && File.Exists(path))
+            .SelectMany(project => XDocument.Load(project).Descendants()
+                .Where(element => element.Name.LocalName == "HintPath")
+                .Select(element => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(project))!, element.Value))))
+            .Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase);
+        var defines = inputList.Where(path => path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) && File.Exists(path))
+            .SelectMany(project => XDocument.Load(project).Descendants()
+                .Where(element => element.Name.LocalName == "DefineConstants")
+                .SelectMany(element => element.Value.Split(';', ',', ' ')))
+            .Where(value => !string.IsNullOrWhiteSpace(value) && !value.Contains('$')).Distinct();
+        return ParseFiles(files, references, defines);
     }
 
-    public IReadOnlyList<ZRType> ParseFiles(IEnumerable<string> files)
+    public IReadOnlyList<ZRType> ParseFiles(IEnumerable<string> files, IEnumerable<string>? referencePaths = null,
+        IEnumerable<string>? preprocessorSymbols = null)
     {
         typesByFullName.Clear();
         declaredTypeNames.Clear();
@@ -49,14 +61,15 @@ public sealed class ZRCodeParser
             .Where(File.Exists)
             .Select(file => CSharpSyntaxTree.ParseText(
                 File.ReadAllText(file),
-                new CSharpParseOptions(LanguageVersion.Preview),
+                new CSharpParseOptions(LanguageVersion.Preview, preprocessorSymbols: preprocessorSymbols),
                 file))
             .ToList();
 
         var compilation = CSharpCompilation.Create(
             "ZRCodeParserInput",
             syntaxTrees,
-            DefaultReferences(),
+            DefaultReferences().Concat((referencePaths ?? Array.Empty<string>())
+                .Select(path => MetadataReference.CreateFromFile(path))),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
 
         foreach (var tree in syntaxTrees)
@@ -615,6 +628,7 @@ public sealed class ZRCodeParser
         RegisterConstructedGenericSurface(declaredType, parent);
 
         ApplyMemberAttributes(member);
+        ApplyDerivedMemberAttributes(member, symbol);
         return member;
     }
 
@@ -643,7 +657,19 @@ public sealed class ZRCodeParser
         RegisterConstructedGenericSurface(declaredType, parent);
 
         ApplyMemberAttributes(member);
+        ApplyDerivedMemberAttributes(member, symbol);
         return member;
+    }
+
+    static void ApplyDerivedMemberAttributes(ZRMember member, ISymbol? symbol)
+    {
+        if (symbol == null) return;
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            for (var type = attribute.AttributeClass?.BaseType; type != null; type = type.BaseType)
+                if (type.ToDisplayString() == "ZergRush.CodeGen.JustData")
+                    member.Options |= ZRMemberOption.JustData;
+        }
     }
 
     ZRType GetOrCreateDeclaredType(INamedTypeSymbol? symbol, string fallbackName, SyntaxNode declaration)
@@ -782,7 +808,9 @@ public sealed class ZRCodeParser
         {
             var element = TypeFromSymbol(arrayType.ElementType);
             var arraySuffix = ArraySuffix(arrayType.Rank);
-            return new ZRType
+            var arrayName = element.FullName + arraySuffix;
+            if (typesByFullName.TryGetValue(arrayName, out var existingArray)) return existingArray;
+            var result = new ZRType
             {
                 Name = element.Name + arraySuffix,
                 FullName = element.FullName + arraySuffix,
@@ -795,6 +823,8 @@ public sealed class ZRCodeParser
                 ArrayRank = arrayType.Rank,
                 IsResolved = arrayType.ElementType.TypeKind != TypeKind.Error
             };
+            typesByFullName[arrayName] = result;
+            return result;
         }
 
         if (symbol is INamedTypeSymbol namedType) return TypeFromNamedSymbol(namedType, writtenName);
@@ -863,6 +893,30 @@ public sealed class ZRCodeParser
         {
             type.Attributes.AddRange(symbol.GetAttributes().Select(AttributeFromData));
             ApplyTypeAttributes(type);
+            type.BaseType = symbol.BaseType is { SpecialType: not SpecialType.System_Object }
+                ? TypeFromSymbol(symbol.BaseType) : null;
+            type.Interfaces = symbol.Interfaces.Select(item => TypeFromSymbol(item)).ToList();
+            type.Members = symbol.GetMembers().OfType<IFieldSymbol>()
+                .Where(field => !field.IsStatic && field.DeclaredAccessibility == Accessibility.Public)
+                .Select(field => ParseExternalField(field, type)).ToList();
+            foreach (var property in symbol.GetMembers().OfType<IPropertySymbol>().Where(property =>
+                         !property.IsStatic && !property.IsIndexer && property.SetMethod?.DeclaredAccessibility == Accessibility.Public &&
+                         (property.GetAttributes().Any(attribute => attribute.AttributeClass?.Name == "GenInclude") ||
+                          (type.Namespace == "UnityEngine" && type.Name.StartsWith("Vector", StringComparison.Ordinal) &&
+                           property.Name is "x" or "y" or "z" or "w"))))
+            {
+                var declaredType = TypeFromSymbol(property.Type);
+                var member = new ZRMember
+                {
+                    Name = property.Name, Kind = ZRMemberKind.Property, Visibility = ZRMemberVisibility.Public,
+                    ParentType = type, DeclaredType = declaredType,
+                    MemberType = UnwrapMemberType(declaredType, out var wrappers), WrapperTypes = wrappers,
+                    Attributes = property.GetAttributes().Select(AttributeFromData).ToList()
+                };
+                ApplyMemberAttributes(member);
+                ApplyDerivedMemberAttributes(member, property);
+                type.Members.Add(member);
+            }
         }
         if (symbol.NullableAnnotation == NullableAnnotation.Annotated && symbol.IsValueType)
         {
@@ -955,7 +1009,7 @@ public sealed class ZRCodeParser
     ZRMember ParseExternalField(IFieldSymbol field, ZRType parent)
     {
         var declaredType = TypeFromSymbol(field.Type);
-        return new ZRMember
+        var member = new ZRMember
         {
             Name = field.Name,
             Kind = ZRMemberKind.Field,
@@ -966,8 +1020,11 @@ public sealed class ZRCodeParser
             WrapperTypes = wrappers,
             IsReadOnly = field.IsReadOnly,
             IsResolved = field.Type.TypeKind != TypeKind.Error,
-            Attributes = new List<ZRAttributeInfo>()
+            Attributes = field.GetAttributes().Select(AttributeFromData).ToList()
         };
+        ApplyMemberAttributes(member);
+        ApplyDerivedMemberAttributes(member, field);
+        return member;
     }
 
     static bool ShouldRegisterConstructedGeneric(INamedTypeSymbol symbol, ZRType type)
