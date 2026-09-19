@@ -69,12 +69,24 @@ public static class CodeGenExtensions
         data.Serialize(writer);
     }
 
-    public static T ReadFromSpan<T>(this ReadOnlySpan<byte> span) where T : IBinaryDeserializable, new()
+    /// <summary>
+    /// Deserializes synchronously without copying the input buffer. The caller must
+    /// keep the input unchanged until this method returns. Neither the reader nor
+    /// its stream may be retained by Deserialize; both are disposed before unpinning.
+    /// </summary>
+    public static unsafe T ReadFromSpan<T>(this ReadOnlySpan<byte> span) where T : IBinaryDeserializable, new()
     {
-        var instance = new T();
-        using var reader = new ZRBinaryReader(span);
-        instance.Deserialize(reader);
-        return instance;
+        fixed (byte* pinned = span)
+        {
+            // An empty span can pin to null, which UnmanagedMemoryStream rejects.
+            // Give the zero-length stream a valid address within this same scope.
+            byte empty = 0;
+            using var stream = new UnmanagedMemoryStream(span.IsEmpty ? &empty : pinned, span.Length);
+            using var reader = new ZRBinaryReader(stream);
+            var instance = new T();
+            instance.Deserialize(reader);
+            return instance;
+        }
     }
     
     public static byte[] WriteToByteArrayS<T>(this ref T data) where T : struct, IBinarySerializable

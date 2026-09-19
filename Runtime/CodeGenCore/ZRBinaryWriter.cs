@@ -71,18 +71,11 @@ namespace ZergRush
         {
         }
 
-        static UnmanagedMemoryStream MakeStream(ReadOnlySpan<byte> str)
-        {
-            unsafe
-            {
-                fixed (byte* ptr = str)
-                {
-                    return new UnmanagedMemoryStream(ptr, str.Length);
-                }
-            }
-        }
-        
-        public ZRBinaryReader(ReadOnlySpan<byte> str) : base(MakeStream(str))
+        // A span may point into movable managed memory or temporary stack storage.
+        // The reader outlives this constructor, so a constructor-local fixed block
+        // cannot protect an UnmanagedMemoryStream for the duration of deserialization.
+        [Obsolete("This constructor copies its input. Use ReadFromSpan<T>() for synchronous zero-copy deserialization, or the byte[]/Stream constructor for a longer-lived reader.")]
+        public ZRBinaryReader(ReadOnlySpan<byte> str) : base(new MemoryStream(str.ToArray(), writable: false))
         {
             
         }
