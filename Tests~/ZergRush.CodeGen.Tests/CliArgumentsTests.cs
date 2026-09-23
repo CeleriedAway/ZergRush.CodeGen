@@ -102,7 +102,7 @@ public sealed class CliArgumentsTests
             "--generate", "Generated",
             "--plugin", "Plugins/First.dll",
             "--plugin", "Plugins/Second.dll",
-            "--plugin", "plugins/first.dll"
+            "--plugin", "./Plugins/First.dll"
         ]);
 
         var resolved = options.ResolvePluginPaths(tree.Root);
