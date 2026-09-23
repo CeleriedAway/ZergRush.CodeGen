@@ -1,3 +1,4 @@
+// ZergRush serialization schema: 2 (logical collections, replacement reads, strict JSON)
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -31,7 +32,7 @@ namespace ZergRush.Samples {
             var __arraysAreOkTemp = arraysAreOk;
             Array.Resize(ref __arraysAreOkTemp, __arraysAreOkCount);
             arraysAreOk = __arraysAreOkTemp;
-            arraysAreOk.UpdateFrom(other.arraysAreOk, __helper);
+            global::ZergRush.Int32ArraySerialization.UpdateFrom(arraysAreOk, other.arraysAreOk, __helper);
             enumValue = other.enumValue;
             externalClass.UpdateFrom(other.externalClass, __helper);
             genericAncestorArray.UpdateFrom(other.genericAncestorArray, __helper);
@@ -118,7 +119,7 @@ namespace ZergRush.Samples {
         public virtual void Deserialize(ZRBinaryReader reader) 
         {
             ancestorArray.Deserialize(reader);
-            arraysAreOk = reader.ReadSystem_Int32_Array();
+            arraysAreOk = global::ZergRush.Int32ArraySerialization.ReadSystem_Int32_Array(reader);
             complexStructuresAreAlsoOk.Deserialize(reader);
             dictsAreOk.Deserialize(reader);
             dictWithNullableValues.Deserialize(reader);
@@ -237,7 +238,7 @@ namespace ZergRush.Samples {
         public virtual void Serialize(ZRBinaryWriter writer) 
         {
             ancestorArray.Serialize(writer);
-            arraysAreOk.Serialize(writer);
+            global::ZergRush.Int32ArraySerialization.Serialize(arraysAreOk, writer);
             complexStructuresAreAlsoOk.Serialize(writer);
             dictsAreOk.Serialize(writer);
             dictWithNullableValues.Serialize(writer);
@@ -324,7 +325,7 @@ namespace ZergRush.Samples {
             hash += hash << 11; hash ^= hash >> 7;
             hash += ancestorArray.CalculateHash(__helper);
             hash += hash << 11; hash ^= hash >> 7;
-            hash += arraysAreOk.CalculateHash(__helper);
+            hash += global::ZergRush.Int32ArraySerialization.CalculateHash(arraysAreOk, __helper);
             hash += hash << 11; hash ^= hash >> 7;
             hash += complexStructuresAreAlsoOk.CalculateHash(__helper);
             hash += hash << 11; hash ^= hash >> 7;
@@ -425,7 +426,7 @@ namespace ZergRush.Samples {
             ancestorArray.CompareCheck(other.ancestorArray, __helper, printer);
             __helper.Pop();
             __helper.Push("arraysAreOk");
-            arraysAreOk.CompareCheck(other.arraysAreOk, __helper, printer);
+            global::ZergRush.Int32ArraySerialization.CompareCheck(arraysAreOk, other.arraysAreOk, __helper, printer);
             __helper.Pop();
             __helper.Push("complexStructuresAreAlsoOk");
             complexStructuresAreAlsoOk.CompareCheck(other.complexStructuresAreAlsoOk, __helper, printer);
@@ -522,7 +523,7 @@ namespace ZergRush.Samples {
                 ancestorArray.ReadFromJson(reader);
                 break;
                 case "arraysAreOk":
-                arraysAreOk = arraysAreOk.ReadFromJson(reader);
+                arraysAreOk = global::ZergRush.Int32ArraySerialization.ReadFromJson(arraysAreOk, reader);
                 break;
                 case "complexStructuresAreAlsoOk":
                 complexStructuresAreAlsoOk.ReadFromJson(reader);
@@ -707,7 +708,7 @@ namespace ZergRush.Samples {
             writer.WritePropertyName("ancestorArray");
             ancestorArray.WriteJson(writer);
             writer.WritePropertyName("arraysAreOk");
-            arraysAreOk.WriteJson(writer);
+            global::ZergRush.Int32ArraySerialization.WriteJson(arraysAreOk, writer);
             writer.WritePropertyName("complexStructuresAreAlsoOk");
             complexStructuresAreAlsoOk.WriteJson(writer);
             writer.WritePropertyName("dictsAreOk");

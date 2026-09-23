@@ -65,7 +65,7 @@ namespace ZergRush.CodeGen
                 {
                     RequestGen(info.Type, sink.classType, GenTaskFlags.CompareChech);
                     sink.content(
-                        $"{info.Access}{accessSuffix}.{CompareFuncName}({otherValueReader}{accessSuffix}, {HelperName}, {PrinterName});");
+                        SerializationCall(info.Type, GenTaskFlags.CompareChech, CompareFuncName, info.Access + accessSuffix, $"{otherValueReader}{accessSuffix}, {HelperName}, {PrinterName}") + ";");
                 }
 
                 sink.content($"{HelperName}.Pop();");

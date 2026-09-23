@@ -1,3 +1,4 @@
+// ZergRush serialization schema: 2 (logical collections, replacement reads, strict JSON)
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -52,12 +53,14 @@ namespace ZergRush.Samples {
         }
         public bool ReadFromJson(ZRJsonTextReader reader) 
         {
-            while (reader.Read())
+            reader.RequireToken(JsonToken.StartObject);
+            while (true)
             {
+                reader.ReadRequired();
                 if (reader.TokenType == JsonToken.PropertyName)
                 {
                     var __name = (string) reader.Value;
-                    reader.Read();
+                    reader.ReadRequired();
                     switch(__name)
                     {
                         case "id":
@@ -71,9 +74,11 @@ namespace ZergRush.Samples {
                             label = (string) reader.Value;
                         }
                         break;
+                        default: reader.SkipObj(); break;
                     }
                 }
                 else if (reader.TokenType == JsonToken.EndObject) { break; }
+                else throw new JsonSerializationException("Expected object property.");
             }
             return true;
         }

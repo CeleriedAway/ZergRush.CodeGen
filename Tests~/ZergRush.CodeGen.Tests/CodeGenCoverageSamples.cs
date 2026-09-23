@@ -162,3 +162,22 @@ public sealed partial class LivableAddressRoot : LivableRoot
 {
     public readonly LivableAddressOwner owner;
 }
+
+[GenTask(GenTaskFlags.SimpleDataPack)]
+public partial class SafetySnapshot
+{
+    public Dictionary<long, int> idToPlace;
+    public SimpleList<SafetyEntry> leaderboard;
+    public Dictionary<long, SafetyEntry> nullableEntries;
+    public ReactiveCollection<int> reactiveValues;
+    public List<int> list;
+    public long[] array;
+    public int[] ints;
+}
+
+[GenTask(GenTaskFlags.SimpleDataPack)]
+public partial class SafetyEntry
+{
+    public long playerId;
+    public int score;
+}

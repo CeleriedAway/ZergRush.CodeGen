@@ -228,6 +228,8 @@ namespace ZergRush.CodeGen
         static void ProcessMember(Type carrierType, ZRMember member, string accessPrefix, GenTaskFlags currFlag,
             bool needMembersGen, Action<ZRMember, ZRData, string> strategy)
         {
+            if (HasUnresolvedType(member.DeclaredType ?? member.MemberType))
+                throw new InvalidOperationException($"Unresolved model member {carrierType.FullName}.{member.Name}: {member.DeclaredType?.FullName ?? member.MemberType.FullName}. Resolve project references/imports before generation.");
             var declaredAccess = string.IsNullOrEmpty(accessPrefix)
                 ? member.Name
                 : $"{accessPrefix}.{member.Name}";
@@ -240,6 +242,22 @@ namespace ZergRush.CodeGen
 
             if (needMembersGen && !data.Type.IsLoadableConfig()) RequestGen(data.Type, carrierType, currFlag);
             strategy(member, data, declaredAccess);
+        }
+
+        static bool UsesRuntimeIntArray(Type type, GenTaskFlags task) =>
+            type == typeof(int[]) && (type.ReadGenCustomFlags() & task) == 0;
+
+        static string SerializationCall(Type type, GenTaskFlags task, string method, string receiver, string args) =>
+            UsesRuntimeIntArray(type, task)
+                ? $"global::ZergRush.Int32ArraySerialization.{method}({receiver}, {args})"
+                : $"{receiver}.{method}({args})";
+
+        static bool HasUnresolvedType(Type type)
+        {
+            if (type == null) return false;
+            return type.Kind == ZRTypeKind.Error || !type.IsResolved ||
+                   (type.IsArray && HasUnresolvedType(type.GetElementType())) ||
+                   type.GetGenericArguments().Any(HasUnresolvedType);
         }
 
         static bool MemberDependsOnGenericParameter(ZRMember member)

@@ -34,7 +34,9 @@ public sealed class ZRCodeParser
     public IReadOnlyList<ZRType> ParseInputs(IEnumerable<string> inputs)
     {
         var inputList = inputs.ToArray();
-        var files = ExpandInputFiles(inputList);
+        var sdk = ProjectCompilationInputs.Load(inputList);
+        var files = ExpandInputFiles(inputList.Where(path => !sdk.Projects.Contains(Path.GetFullPath(path))))
+            .Concat(sdk.Files).Distinct(StringComparer.OrdinalIgnoreCase);
         var references = inputList.Where(path => path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) && File.Exists(path))
             .SelectMany(project => XDocument.Load(project).Descendants()
                 .Where(element => element.Name.LocalName == "HintPath")
@@ -45,11 +47,14 @@ public sealed class ZRCodeParser
                 .Where(element => element.Name.LocalName == "DefineConstants")
                 .SelectMany(element => element.Value.Split(';', ',', ' ')))
             .Where(value => !string.IsNullOrWhiteSpace(value) && !value.Contains('$')).Distinct();
-        return ParseFiles(files, references, defines);
+        return ParseFilesCore(files, references.Concat(sdk.References).Distinct(StringComparer.OrdinalIgnoreCase), defines.Concat(sdk.Defines).Distinct(), sdk.Projects.Count == 0);
     }
 
     public IReadOnlyList<ZRType> ParseFiles(IEnumerable<string> files, IEnumerable<string>? referencePaths = null,
-        IEnumerable<string>? preprocessorSymbols = null)
+        IEnumerable<string>? preprocessorSymbols = null) => ParseFilesCore(files, referencePaths, preprocessorSymbols, true);
+
+    IReadOnlyList<ZRType> ParseFilesCore(IEnumerable<string> files, IEnumerable<string>? referencePaths,
+        IEnumerable<string>? preprocessorSymbols, bool useDefaultReferences)
     {
         typesByFullName.Clear();
         declaredTypeNames.Clear();
@@ -68,8 +73,10 @@ public sealed class ZRCodeParser
         var compilation = CSharpCompilation.Create(
             "ZRCodeParserInput",
             syntaxTrees,
-            DefaultReferences().Concat((referencePaths ?? Array.Empty<string>())
-                .Select(path => MetadataReference.CreateFromFile(path))),
+            (referencePaths ?? Array.Empty<string>()).Select(path => MetadataReference.CreateFromFile(path))
+                .Concat(useDefaultReferences ? DefaultReferences() : Array.Empty<MetadataReference>())
+                .GroupBy(reference => Path.GetFileName(reference.Display), StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First()),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
 
         foreach (var tree in syntaxTrees)

@@ -49,7 +49,7 @@ namespace ZergRush.CodeGen
             else if (t == typeof(DateTime)) return $"({HashTypeName}){name}.Ticks";
             else if (t.IsPrimitive || t.IsEnum) return $"({HashType}){name}";
 
-            string calcHash = $"{name}.CalculateHash({HelperName})";
+            string calcHash = SerializationCall(t, GenTaskFlags.Hash, "CalculateHash", name, HelperName);
             if (t == typeof(string))
             {
                 calcHash = $"CodeGenImplTools.CalculateStringHash({name})";

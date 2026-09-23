@@ -58,6 +58,7 @@ namespace ZergRush.CodeGen
 
             if (extenssion == ".cs")
             {
+                result.AppendLine("// ZergRush serialization schema: 2 (logical collections, replacement reads, strict JSON)");
                 result.AppendLine("using System;");
                 result.AppendLine("using System.Collections.Generic;");
                 result.AppendLine("using System.Text;");

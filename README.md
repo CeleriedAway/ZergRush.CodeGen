@@ -2,7 +2,7 @@
 
 Source-first and reflection-driven code generation tooling for ZergRush.
 
-`Runtime/` contains the Unity-compilable abstractions. `Tools~/` holds the parser, generator engine, and CLI source; Unity ignores that folder and the Unity wrapper builds the CLI locally for debugging. This repository is not published yet.
+`Runtime/` contains the Unity-compilable abstractions. `Tools~/` holds the parser, generator engine, and CLI source; Unity ignores that folder and the Unity wrapper builds the CLI locally for debugging. NuGet packages and the CLI are published as coordinated preview releases. See [preview.4 upgrade instructions](UPGRADING-preview.4.md) for serialization changes and legacy-save migration.
 
 ## CLI inputs
 

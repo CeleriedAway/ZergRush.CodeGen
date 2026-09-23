@@ -1,3 +1,4 @@
+// ZergRush serialization schema: 2 (logical collections, replacement reads, strict JSON)
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -65,7 +66,7 @@ namespace ZergRush.CodeGen.Tests {
             var __primitiveArrayTemp = primitiveArray;
             Array.Resize(ref __primitiveArrayTemp, __primitiveArrayCount);
             primitiveArray = __primitiveArrayTemp;
-            primitiveArray.UpdateFrom(other.primitiveArray, __helper);
+            global::ZergRush.Int32ArraySerialization.UpdateFrom(primitiveArray, other.primitiveArray, __helper);
             primitiveDictionary.UpdateFrom(other.primitiveDictionary, __helper);
             primitiveList.UpdateFrom(other.primitiveList, __helper);
             reactiveCollection.UpdateFrom(other.reactiveCollection, __helper);
@@ -156,7 +157,7 @@ namespace ZergRush.CodeGen.Tests {
             objectDictionary.Deserialize(reader);
             objectList.Deserialize(reader);
             plainStruct = reader.ReadZergRush_Samples_PlainStruct();
-            primitiveArray = reader.ReadSystem_Int32_Array();
+            primitiveArray = global::ZergRush.Int32ArraySerialization.ReadSystem_Int32_Array(reader);
             primitiveDictionary.Deserialize(reader);
             primitiveList.Deserialize(reader);
             reactiveCollection.Deserialize(reader);
@@ -224,7 +225,7 @@ namespace ZergRush.CodeGen.Tests {
             objectDictionary.Serialize(writer);
             objectList.Serialize(writer);
             plainStruct.Serialize(writer);
-            primitiveArray.Serialize(writer);
+            global::ZergRush.Int32ArraySerialization.Serialize(primitiveArray, writer);
             primitiveDictionary.Serialize(writer);
             primitiveList.Serialize(writer);
             reactiveCollection.Serialize(writer);
@@ -288,7 +289,7 @@ namespace ZergRush.CodeGen.Tests {
             hash += hash << 11; hash ^= hash >> 7;
             hash += plainStruct.CalculateHash(__helper);
             hash += hash << 11; hash ^= hash >> 7;
-            hash += primitiveArray.CalculateHash(__helper);
+            hash += global::ZergRush.Int32ArraySerialization.CalculateHash(primitiveArray, __helper);
             hash += hash << 11; hash ^= hash >> 7;
             hash += primitiveDictionary.CalculateHash(__helper);
             hash += hash << 11; hash ^= hash >> 7;
@@ -387,7 +388,7 @@ namespace ZergRush.CodeGen.Tests {
             plainStruct.CompareCheck(other.plainStruct, __helper, printer);
             __helper.Pop();
             __helper.Push("primitiveArray");
-            primitiveArray.CompareCheck(other.primitiveArray, __helper, printer);
+            global::ZergRush.Int32ArraySerialization.CompareCheck(primitiveArray, other.primitiveArray, __helper, printer);
             __helper.Pop();
             __helper.Push("primitiveDictionary");
             primitiveDictionary.CompareCheck(other.primitiveDictionary, __helper, printer);
@@ -542,7 +543,7 @@ namespace ZergRush.CodeGen.Tests {
                 plainStruct = (ZergRush.Samples.PlainStruct)reader.ReadFromJsonZergRush_Samples_PlainStruct();
                 break;
                 case "primitiveArray":
-                primitiveArray = primitiveArray.ReadFromJson(reader);
+                primitiveArray = global::ZergRush.Int32ArraySerialization.ReadFromJson(primitiveArray, reader);
                 break;
                 case "primitiveDictionary":
                 primitiveDictionary.ReadFromJson(reader);
@@ -686,7 +687,7 @@ namespace ZergRush.CodeGen.Tests {
             writer.WritePropertyName("plainStruct");
             plainStruct.WriteJson(writer);
             writer.WritePropertyName("primitiveArray");
-            primitiveArray.WriteJson(writer);
+            global::ZergRush.Int32ArraySerialization.WriteJson(primitiveArray, writer);
             writer.WritePropertyName("primitiveDictionary");
             primitiveDictionary.WriteJson(writer);
             writer.WritePropertyName("primitiveList");

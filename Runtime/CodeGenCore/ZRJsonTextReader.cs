@@ -38,6 +38,28 @@ namespace ZergRush
     
     public class ZRJsonTextReader : JsonTextReader
     {
+        public DeserializationBudget Budget { get; set; } = new DeserializationBudget();
+
+        public override bool Read()
+        {
+            bool result = base.Read();
+            if (!result && Depth != 0) throw new JsonSerializationException("Unexpected end of JSON.");
+            return result;
+        }
+
+        public void ReadRequired()
+        {
+            do
+            {
+                if (!Read()) throw new JsonSerializationException("Unexpected end of JSON.");
+            } while (TokenType == JsonToken.Comment);
+        }
+
+        public void RequireToken(JsonToken token)
+        {
+            if (TokenType != token) throw new JsonSerializationException("Expected " + token + ", got " + TokenType);
+        }
+
         readonly Dictionary<long, object> currentObjects = new Dictionary<long, object>();
 
         public ZRJsonTextReader(TextReader reader) : base(reader)
@@ -62,7 +84,7 @@ namespace ZergRush
                 if (currentObjects.TryGetValue(refId, out object value))
                 {
                     t = (T) value;
-                    while (TokenType != JsonToken.EndObject) Read();
+                    while (TokenType != JsonToken.EndObject) ReadRequired();
                 }
                 else
                 {

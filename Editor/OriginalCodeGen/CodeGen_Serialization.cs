@@ -60,7 +60,7 @@ namespace ZergRush.CodeGen
                 }
                 else
                 {
-                    sink.content($"{access}.{WriteFuncName}({stream});");
+                    sink.content(SerializationCall(t, GenTaskFlags.Serialize, WriteFuncName, access, stream) + ";");
                 }
             }
         }
@@ -196,6 +196,8 @@ namespace ZergRush.CodeGen
             if (t.IsArray || t.IsImmutableType() || (t.IsValueType && t.IsControllable() == false))
                 baseCall = (s, info1) =>
                     s.content($"{info1.Access} = {stream}.{ReadNewInstanceOfImmutableType(t, pooled)};");
+            if (UsesRuntimeIntArray(t, GenTaskFlags.Deserialize))
+                baseCall = (s, info1) => s.content($"{info1.Access} = global::ZergRush.Int32ArraySerialization.ReadSystem_Int32_Array({stream});");
             else if (t.IsMultipleReference())
             {
                 baseCall = (s, info1) => s.content($"{stream}.ReadFromRef(ref {info1.Access});");
@@ -217,24 +219,26 @@ namespace ZergRush.CodeGen
             );
         }
 
-        static void SinkCountCheck(this MethodBuilder sink, string countVar)
+        static void SinkCountCheck(this MethodBuilder sink, string countVar, Type elementType, string stream)
         {
-            // TODO need external info to customize size check count
-            // var constrain = elem.sharpMemberInfo.GetCustomAttribute<GenArrayLengthConstraint>();
-            // if (constrain != null && constrain.constrainElementCount == -1) return;
-            // sink.content($"if({countVar} > {(constrain != null ? constrain.constrainElementCount : 1000)}) throw new {nameof(ZergRushCorruptedOrInvalidDataLayout)}();");
-            sink.content($"if({countVar} > 100000) throw new {nameof(ZergRushCorruptedOrInvalidDataLayout)}();");
+            sink.content($"{stream}.Budget.Reserve<{elementType.RealName(true)}>({countVar});");
         }
 
         public static void SinkListReaderCode(Type listType, MethodBuilder sink, Type type, string path, string stream,
             bool pooled)
         {
             string count = listType.IsList() ? "Count" : "Length";
-            if (listType.IsLivableList()) sink.content($"{path}.{updatemod} = true;");
-            if (listType.IsConfigStorageSlot()) sink.content($"{path}.Clear();");
 
             sink.content($"var size = {stream}.ReadInt32();");
-            sink.SinkCountCheck("size");
+            sink.SinkCountCheck("size", type, stream);
+            sink.content($"{path}.Clear();");
+            if (listType.IsLivableList())
+            {
+                sink.content($"var __previousUpdateMode = {path}.{updatemod};");
+                sink.content($"{path}.{updatemod} = true;");
+                sink.content("try");
+                sink.openBrace();
+            }
             if (!listType.IsReactiveCollection())
             {
                 sink.content($"{path}.Capacity = size;");
@@ -265,14 +269,20 @@ namespace ZergRush.CodeGen
 
             sink.indent--;
             sink.content($"}}");
-            if (listType.IsLivableList()) sink.content($"{path}.{updatemod} = false;");
+            if (listType.IsLivableList())
+            {
+                sink.closeBrace();
+                sink.content($"finally {{ {path}.{updatemod} = __previousUpdateMode; }}");
+            }
         }
 
         public static void SinkDictReaderCode(Type dictType,MethodBuilder sink, Type keyType, Type valType, string path,
             string stream, bool pooled, bool configStorage)
         {
             sink.content($"var size = {stream}.ReadInt32();");
-            sink.SinkCountCheck("size");
+            sink.SinkCountCheck("size", keyType, stream);
+            sink.SinkCountCheck("size", valType, stream);
+            sink.content($"{path}.Clear();");
             //sink.content($"{path}.Capacity = size;");
             sink.content($"for (int i = 0; i < size; i++)");
             sink.content($"{{");
@@ -305,7 +315,7 @@ namespace ZergRush.CodeGen
         {
             path = "array";
             sink.content($"var size = {stream}.ReadInt32();");
-            sink.SinkCountCheck("size");
+            sink.SinkCountCheck("size", type, stream);
             if (type.IsArray)
             {
                 sink.content($"var {path} = new {type.GetElementType().RealName(true)}[size][];");

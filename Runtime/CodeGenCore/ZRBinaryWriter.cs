@@ -62,6 +62,7 @@ namespace ZergRush
     
     public class ZRBinaryReader : BinaryReader
     {
+        public DeserializationBudget Budget { get; set; } = new DeserializationBudget();
         readonly Dictionary<long, object> currentObjects = new Dictionary<long, object>();
 
         public ZRBinaryReader(Stream reader) : base(reader)

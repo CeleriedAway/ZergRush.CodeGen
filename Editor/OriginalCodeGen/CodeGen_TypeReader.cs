@@ -97,7 +97,7 @@ namespace ZergRush.CodeGen
         public static void RequestGen(Type t, Type requester, GenTaskFlags flags, bool allowGenericDeclRegister = false)
         {
             if (t == null) return;
-            if (t == typeof(object)) return;
+            if (t == typeof(object) || t == typeof(int[])) return;
             if (t == Void || t.IsPrimitive || t.IsNullable() || t.IsEnum || t.IsGenericParameter || t == typeof(string) ||
                 t == typeof(byte[]) || t == typeof(Guid) || t == typeof(DateTime)) return;
 

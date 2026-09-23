@@ -193,7 +193,7 @@ namespace ZergRush.CodeGen
             }
             Func<ZRData, string> defaultContent = info1 =>
             {
-                var baseCall = $"{info1.Access}.{UpdateFuncName}({other}, {HelperName});";
+                var baseCall = SerializationCall(info1.Type, GenTaskFlags.UpdateFrom, UpdateFuncName, info1.Access, $"{other}, {HelperName}") + ";";
                 if (supportMultiRef && info1.Type.IsMultipleReference())
                 {
                     if (info1.Type.IsLivableNode() && !info1.Type.IsLivableRoot())

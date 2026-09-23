@@ -101,7 +101,7 @@ namespace ZergRush.CodeGen
             }
             else
             {
-                sink.content($"{valueAccess}.{JsonWriteFuncName}(writer);");
+                sink.content(SerializationCall(t, GenTaskFlags.JsonSerialization, JsonWriteFuncName, valueAccess, "writer") + ";");
             }
 
             if (info.CanBeNull)
@@ -124,7 +124,7 @@ namespace ZergRush.CodeGen
             // info can be transformed because read from can do temp value wrapping for it
             Action<MethodBuilder, ZRData> baseCall = (s, info1) =>
                 s.content(
-                    $"{(info.Type.IsArray ? info1.Access + " = " : "")}{info1.Access}.{JsonReadFuncName}(reader);");
+                    (info.Type.IsArray ? info1.Access + " = " : "") + SerializationCall(t, GenTaskFlags.JsonSerialization, JsonReadFuncName, info1.Access, "reader") + ";");
             if (t.IsMultipleReference())
             {
                 baseCall = (s, info1) => s.content($"reader.ReadFromRef(ref {info1.Access});");
@@ -249,100 +249,39 @@ namespace ZergRush.CodeGen
 
                 // Reader
                 JsonAssertReadStartStatement(sinkReader, $"reader.TokenType != JsonToken.StartArray");
-                if (type.IsLivableList()) sinkReader.content($"self.{updatemod} = true;");
-                if (type.IsConfigStorageSlot()) sinkReader.content($"{accessPrefix}.Clear();");
                 if (type.IsArray)
-                    sinkReader.content(
-                        $"if(self == null || self.Length > 0) self = Array.Empty<{elemType.RealName(true)}>();");
-                sinkReader.content($"while (reader.Read())");
-                sinkReader.content($"{{");
-                sinkReader.indent++;
-                sinkReader.content("if (reader.TokenType == JsonToken.EndArray) { break; }");
-
-                Action checkNull = () =>
+                    sinkReader.content($"var __items = new System.Collections.Generic.List<{elemType.RealName(true)}>();");
+                else sinkReader.content($"{accessPrefix}.Clear();");
+                if (type.IsLivableList())
                 {
-                    if (elemType.IsValueType == false)
-                    {
-                        if (type.IsArray)
-                        {
-                            sinkReader.content("if (reader.TokenType == JsonToken.Null) { self[self.Length - 1] = null; continue; }");
-                        }
-                        else
-                        {
-                            sinkReader.content("if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }");
-                        }
-                    }
-                };
-
-                Action initArray = () => { sinkReader.content($"Array.Resize(ref self, self.Length + 1);"); };
-                if (elemType.IsLivableNode())
-                {
-                    if (type.IsArray)
-                    {
-                        initArray();
-                        if (elemType.IsValueType == false)
-                        {
-                            sinkReader.content("if (reader.TokenType == JsonToken.Null) { self[self.Length - 1] = null; continue; }");
-                        }
-                    }
-                    else
-                    {
-                        sinkReader.content($"self.Add(null);");
-                        sinkReader.content("if (reader.TokenType == JsonToken.Null) continue;");
-                    }
-
-                    string tempVarName = "__temp";
-                    var tempOptions = ZRDataOption.SureIsNull;
-                    if (type.IsConfigStorage()) tempOptions |= ZRDataOption.InsideConfigStorage;
-                    ReadJsonValueStatement(sinkReader, elemType.ToData(tempVarName, tempOptions),
-                        elemType, tempVarName, type, true);
-                    sinkReader.content($"self[self.{count} - 1] = {tempVarName};");
+                    sinkReader.content($"var __previousUpdateMode = self.{updatemod};");
+                    sinkReader.content($"self.{updatemod} = true;");
+                    sinkReader.content("try");
+                    sinkReader.openBrace();
                 }
-                else
+                var target = type.IsArray ? "__items" : accessPrefix;
+                sinkReader.content("while (true)");
+                sinkReader.openBrace();
+                sinkReader.content("reader.ReadRequired();");
+                sinkReader.content("if (reader.TokenType == JsonToken.EndArray) break;");
+                sinkReader.content($"reader.Budget.ReserveElement<{elemType.RealName(true)}>({target}.Count + 1);");
+                if (!elemType.IsValueType)
+                    sinkReader.content($"if (reader.TokenType == JsonToken.Null) {{ {target}.Add(null); continue; }}");
+                var valueOptions = ZRDataOption.SureIsNull;
+                if (type.IsConfigStorage()) valueOptions |= ZRDataOption.InsideConfigStorage;
+                // Livable elements need a slot before hierarchy propagation during their read.
+                if (elemType.IsLivableNode() && !type.IsArray) sinkReader.content($"{target}.Add(null);");
+                ReadJsonValueStatement(sinkReader, elemType.ToData("val", valueOptions), elemType, "val", type, true);
+                if (elemType.IsLivableNode() && !type.IsArray)
+                    sinkReader.content($"{target}[{target}.Count - 1] = val;");
+                else sinkReader.content($"{target}.Add(val);");
+                sinkReader.closeBrace();
+                if (type.IsLivableList())
                 {
-                    // if (type.IsValueType)
-                    // {
-                    //     sinkReader.content(type.IsArray ? $"self.Add(null);" : "self[self.Length - 1] = null;");
-                    //     sinkReader.content("if (reader.TokenType == JsonToken.Null) continue;");
-                    // }
-
-                    if (type.IsArray)
-                    {
-                        initArray();
-                        if (elemType.IsValueType == false)
-                        {
-                            sinkReader.content("if (reader.TokenType == JsonToken.Null) { self[self.Length - 1] = null; continue; }");
-                        }
-                    }
-                    else
-                    {
-                        if (elemType.IsValueType == false)
-                        {
-                            sinkReader.content("if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }");
-                        }
-                    }
-
-                    var valueOptions = ZRDataOption.SureIsNull;
-                    if (type.IsConfigStorage()) valueOptions |= ZRDataOption.InsideConfigStorage;
-                    ReadJsonValueStatement(sinkReader, elemType.ToData("val", valueOptions),
-                        elemType, "val", type, true);
-
-                    if (type.IsArray)
-                    {
-                        sinkReader.content($"self[self.Length - 1] = val;");
-                    }
-                    else
-                    {
-                        sinkReader.content($"{accessPrefix}.Add(val);");
-                    }
+                    sinkReader.closeBrace();
+                    sinkReader.content($"finally {{ self.{updatemod} = __previousUpdateMode; }}");
                 }
-
-                sinkReader.indent--;
-                sinkReader.content($"}}");
-                if (type.IsLivableList()) sinkReader.content($"self.{updatemod} = false;");
-
-                if (type.IsArray) sinkReader.content($"return self;");
-                else sinkReader.content("return true;");
+                sinkReader.content(type.IsArray ? "return __items.ToArray();" : "return true;");
             }
             else if (type.IsDictionary())
             {
@@ -369,9 +308,9 @@ namespace ZergRush.CodeGen
                     true);
                 sinkWriter.content($"writer.WritePropertyName(\"value\");");
                 WriteJsonValueStatement(sinkWriter,
-                    valType.ToData("item.Value", type.IsConfigStorage()
+                    valType.ToData("item.Value", (type.IsConfigStorage()
                         ? ZRDataOption.InsideConfigStorage
-                        : ZRDataOption.None),
+                        : ZRDataOption.None) | (valType.IsValueType ? ZRDataOption.None : ZRDataOption.CanBeNull)),
                     true);
                 sinkWriter.content($"writer.WriteEndObject();");
                 sinkWriter.closeBrace();
@@ -379,23 +318,32 @@ namespace ZergRush.CodeGen
 
                 // Reader
                 JsonAssertReadStartStatement(sinkReader, $"reader.TokenType != JsonToken.StartArray");
-                sinkReader.content($"while (reader.Read())");
+                sinkReader.content($"{accessPrefix}.Clear();");
+                sinkReader.content("while (true)");
                 sinkReader.openBrace();
+                sinkReader.content("reader.ReadRequired();");
                 sinkReader.content("if (reader.TokenType == JsonToken.EndArray) { break; }");
                 JsonAssertReadStartStatement(sinkReader, $"reader.TokenType != JsonToken.StartObject");
-                sinkReader.content($"reader.Read();"); // key prop name
-                sinkReader.content($"reader.Read();"); // key content
+                sinkReader.content($"reader.Budget.ReserveElement<{keyType.RealName(true)}>({accessPrefix}.Count + 1);");
+                sinkReader.content($"reader.Budget.ReserveElement<{valType.RealName(true)}>({accessPrefix}.Count + 1);");
+                sinkReader.content("reader.ReadRequired();");
+                sinkReader.content("reader.RequireToken(JsonToken.PropertyName);");
+                sinkReader.content("if ((string)reader.Value != \"key\") throw new JsonSerializationException(\"Expected dictionary key.\");");
+                sinkReader.content("reader.ReadRequired();"); // key content
                 var keyOptions = ZRDataOption.SureIsNull;
                 if (type.IsConfigStorage()) keyOptions |= ZRDataOption.InsideConfigStorage;
                 ReadJsonValueStatement(sinkReader, keyType.ToData("key", keyOptions),
                     keyType, "key", type, true);
-                sinkReader.content($"reader.Read();"); // val prop name
-                sinkReader.content($"reader.Read();"); // val content
-                var valOptions = ZRDataOption.SureIsNull;
+                sinkReader.content("reader.ReadRequired();");
+                sinkReader.content("reader.RequireToken(JsonToken.PropertyName);");
+                sinkReader.content("if ((string)reader.Value != \"value\") throw new JsonSerializationException(\"Expected dictionary value.\");");
+                sinkReader.content("reader.ReadRequired();"); // val content
+                var valOptions = ZRDataOption.SureIsNull | (valType.IsValueType ? ZRDataOption.None : ZRDataOption.CanBeNull);
                 if (type.IsConfigStorage()) valOptions |= ZRDataOption.InsideConfigStorage;
                 ReadJsonValueStatement(sinkReader, valType.ToData("val", valOptions),
                     valType, "val", type, true);
-                sinkReader.content($"reader.ReadSkipComments();"); // end keyval obj
+                sinkReader.content("reader.ReadRequired();");
+                sinkReader.content("reader.RequireToken(JsonToken.EndObject);"); // end keyval obj
                 sinkReader.content($"{accessPrefix}.Add(key, val);");
                 sinkReader.closeBrace();
                 sinkReader.content("return true;");
@@ -425,12 +373,14 @@ namespace ZergRush.CodeGen
 
                 if (externalMode)
                 {
-                    sinkReader.content($"while (reader.Read())");
+                    sinkReader.content("reader.RequireToken(JsonToken.StartObject);");
+                    sinkReader.content("while (true)");
                     sinkReader.openBrace();
+                    sinkReader.content("reader.ReadRequired();");
                     sinkReader.content($"if (reader.TokenType == JsonToken.PropertyName)");
                     sinkReader.openBrace();
                     sinkReader.content($"var __name = (string) reader.Value;");
-                    sinkReader.content($"reader.Read();");
+                    sinkReader.content("reader.ReadRequired();");
                     sinkWriter.content($"writer.WriteStartObject();");
                 }
 
@@ -476,7 +426,8 @@ namespace ZergRush.CodeGen
                 }, readerOptions);
                 if (!genericReaderBranchesStarted)
                 {
-                    if (!immutableMode && !externalMode) sinkReader.content($"default: return false; break;");
+                    if (externalMode) sinkReader.content("default: reader.SkipObj(); break;");
+                    else if (!immutableMode) sinkReader.content($"default: return false; break;");
                     sinkReader.closeBrace();
                 }
 
@@ -484,6 +435,7 @@ namespace ZergRush.CodeGen
                 {
                     sinkReader.closeBrace();
                     sinkReader.content("else if (reader.TokenType == JsonToken.EndObject) { break; }");
+                    sinkReader.content("else throw new JsonSerializationException(\"Expected object property.\");");
                     sinkReader.closeBrace();
                     sinkWriter.content($"writer.WriteEndObject();");
                 }

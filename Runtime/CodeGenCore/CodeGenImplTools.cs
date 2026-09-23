@@ -210,8 +210,9 @@ public unsafe static class CodeGenImplTools
             {
                 if (reader.TokenType == JsonToken.StartObject) objCount++;
                 else if (reader.TokenType == JsonToken.EndObject) objCount--;
-                if (objCount == 0) break;
+                if (objCount == 0) return;
             }
+            throw new JsonSerializationException("Unexpected end of JSON while skipping a value.");
         }
         else if (reader.TokenType == JsonToken.StartArray)
         {
@@ -220,8 +221,9 @@ public unsafe static class CodeGenImplTools
             {
                 if (reader.TokenType == JsonToken.StartArray) objCount++;
                 else if (reader.TokenType == JsonToken.EndArray) objCount--;
-                if (objCount == 0) break;
+                if (objCount == 0) return;
             }
+            throw new JsonSerializationException("Unexpected end of JSON while skipping a value.");
         }
     }
 
@@ -374,7 +376,11 @@ public unsafe static class CodeGenImplTools
     public static byte[] ReadByteArray(this BinaryReader stream)
     {
         int size = stream.ReadInt32();
-        return stream.ReadBytes(size);
+        if (stream is ZRBinaryReader zr) zr.Budget.Reserve<byte>(size);
+        else if (size < 0 || size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        var result = stream.ReadBytes(size);
+        if (result.Length != size) throw new EndOfStreamException();
+        return result;
     }
     
     public static void WriteByteArray(this BinaryWriter stream, byte[] bytes)
@@ -387,26 +393,32 @@ public unsafe static class CodeGenImplTools
     public static void ReadRootFromJson<T>(this T t, ZRJsonTextReader reader) where T : IJsonSerializable
     {
         reader.InitRootObject(t);
+        if (reader.TokenType == JsonToken.None) reader.ReadRequired();
+        reader.RequireToken(JsonToken.StartObject);
         t.ReadFromJson(reader);
+        while (reader.Read())
+            if (reader.TokenType != JsonToken.Comment) throw new JsonSerializationException("Trailing JSON content.");
     }
 
     public static void ReadFromJson<T>(this T t, ZRJsonTextReader reader) where T : IJsonSerializable
     {
-        while (reader.Read())
+        if (reader.TokenType == JsonToken.None)
         {
+            reader.ReadRequired();
+            reader.RequireToken(JsonToken.StartObject);
+        }
+        while (true)
+        {
+            reader.ReadRequired();
             if (reader.TokenType == JsonToken.PropertyName)
             {
                 var name = (string)reader.Value;
-                reader.Read();
-                if (!t.ReadFromJsonField(reader, name))
-                {
-                    reader.SkipObj();
-                }
+                reader.ReadRequired();
+                if (!t.ReadFromJsonField(reader, name)) reader.SkipObj();
             }
-            else if (reader.TokenType == JsonToken.EndObject)
-            {
-                break;
-            }
+            else if (reader.TokenType == JsonToken.EndObject) return;
+            else if (reader.TokenType != JsonToken.Comment)
+                throw new JsonSerializationException("Expected object property.");
         }
     }
 
