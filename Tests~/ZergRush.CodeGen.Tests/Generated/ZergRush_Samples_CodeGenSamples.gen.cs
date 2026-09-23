@@ -27,10 +27,10 @@ namespace ZergRush.Samples {
         public virtual void UpdateFrom(ZergRush.Samples.CodeGenSamples other, ZRUpdateFromHelper __helper) 
         {
             ancestorArray.UpdateFrom(other.ancestorArray, __helper);
-            var arraysAreOkCount = other.arraysAreOk.Length;
-            var arraysAreOkTemp = arraysAreOk;
-            Array.Resize(ref arraysAreOkTemp, arraysAreOkCount);
-            arraysAreOk = arraysAreOkTemp;
+            var __arraysAreOkCount = other.arraysAreOk.Length;
+            var __arraysAreOkTemp = arraysAreOk;
+            Array.Resize(ref __arraysAreOkTemp, __arraysAreOkCount);
+            arraysAreOk = __arraysAreOkTemp;
             arraysAreOk.UpdateFrom(other.arraysAreOk, __helper);
             enumValue = other.enumValue;
             externalClass.UpdateFrom(other.externalClass, __helper);

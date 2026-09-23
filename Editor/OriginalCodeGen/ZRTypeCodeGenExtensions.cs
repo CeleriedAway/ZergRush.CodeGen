@@ -141,6 +141,8 @@ namespace ZergRush.CodeGen
         public static bool IsList(this ZRType? type)
         {
             return type?.CommonConstruct == ZRCommonConstruct.List || type.IsReactiveCollection() ||
+                   type.IsNamedGenericType("ZergRush.Alive", "LivableList") ||
+                   (type?.IsGenericType == true && type.ClearName() == "SimpleList" && string.IsNullOrEmpty(type.Namespace)) ||
                    type.IsConfigStorageList() || type.IsConfigStorageSlot();
         }
 

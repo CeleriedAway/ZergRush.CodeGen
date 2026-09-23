@@ -6,6 +6,30 @@ using ZergRush.Samples;
 
 namespace ZergRush.CodeGen.Tests;
 
+[GenTask(GenTaskFlags.SimpleDataPack), GenModelRootSetup]
+public partial class SerializableLivableRoot : LivableRoot
+{
+    public readonly LivableList<SerializableLivableLeaf> items;
+}
+
+[GenTask(GenTaskFlags.LivableNodePack)]
+public partial class SerializableLivableLeaf : Livable
+{
+    public int value;
+}
+
+[GenTask(GenTaskFlags.SimpleDataPack)]
+public partial class SimpleListHolder
+{
+    public SimpleList<int> values;
+}
+
+[GenTask(GenTaskFlags.SimpleDataPack)]
+public partial class ExternalVectorHolder
+{
+    public System.Numerics.Vector3 position;
+}
+
 [GenTask(
     GenTaskFlags.Serialization |
     GenTaskFlags.JsonSerialization |

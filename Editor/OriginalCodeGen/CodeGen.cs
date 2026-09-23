@@ -549,8 +549,7 @@ namespace ZergRush.CodeGen
             }
             if (hasErrors)
             {
-                global::ZergRush.LogSink.errLog("error occured");
-                return;
+                throw new InvalidOperationException("Code generation failed. See the preceding diagnostics; generated source was not written.");
             }
 
             customContextFolders.ForEach(genFolder =>

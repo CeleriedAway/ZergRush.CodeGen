@@ -61,10 +61,10 @@ namespace ZergRush.CodeGen.Tests {
             objectDictionary.UpdateFrom(other.objectDictionary, __helper);
             objectList.UpdateFrom(other.objectList, __helper);
             plainStruct.UpdateFrom(other.plainStruct, __helper);
-            var primitiveArrayCount = other.primitiveArray.Length;
-            var primitiveArrayTemp = primitiveArray;
-            Array.Resize(ref primitiveArrayTemp, primitiveArrayCount);
-            primitiveArray = primitiveArrayTemp;
+            var __primitiveArrayCount = other.primitiveArray.Length;
+            var __primitiveArrayTemp = primitiveArray;
+            Array.Resize(ref __primitiveArrayTemp, __primitiveArrayCount);
+            primitiveArray = __primitiveArrayTemp;
             primitiveArray.UpdateFrom(other.primitiveArray, __helper);
             primitiveDictionary.UpdateFrom(other.primitiveDictionary, __helper);
             primitiveList.UpdateFrom(other.primitiveList, __helper);

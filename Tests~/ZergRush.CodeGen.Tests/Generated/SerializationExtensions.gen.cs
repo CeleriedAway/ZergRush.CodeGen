@@ -2244,6 +2244,279 @@ public static partial class SerializationExtensions
             self[__pair.Key] = __value;
         }
     }
+    public static void UpdateFrom(ref this System.Numerics.Vector3 self, System.Numerics.Vector3 other, ZRUpdateFromHelper __helper) 
+    {
+        self.X = other.X;
+        self.Y = other.Y;
+        self.Z = other.Z;
+    }
+    public static System.Numerics.Vector3 ReadSystem_Numerics_Vector3(this ZRBinaryReader reader) 
+    {
+        var self = default(System.Numerics.Vector3);
+        self.X = reader.ReadSingle();
+        self.Y = reader.ReadSingle();
+        self.Z = reader.ReadSingle();
+        return self;
+    }
+    public static void Serialize(this System.Numerics.Vector3 self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.X);
+        writer.Write(self.Y);
+        writer.Write(self.Z);
+    }
+    public static ulong CalculateHash(this System.Numerics.Vector3 self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)701202043;
+        hash += hash << 11; hash ^= hash >> 7;
+        hash += (ulong)BitConverter.SingleToInt32Bits(self.X);
+        hash += hash << 11; hash ^= hash >> 7;
+        hash += (ulong)BitConverter.SingleToInt32Bits(self.Y);
+        hash += hash << 11; hash ^= hash >> 7;
+        hash += (ulong)BitConverter.SingleToInt32Bits(self.Z);
+        hash += hash << 11; hash ^= hash >> 7;
+        return hash;
+    }
+    public static void CompareCheck(this System.Numerics.Vector3 self, System.Numerics.Vector3 other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.X != other.X) CodeGenImplTools.LogCompError(__helper, "X", printer, other.X, self.X);
+        if (self.Y != other.Y) CodeGenImplTools.LogCompError(__helper, "Y", printer, other.Y, self.Y);
+        if (self.Z != other.Z) CodeGenImplTools.LogCompError(__helper, "Z", printer, other.Z, self.Z);
+    }
+    public static System.Numerics.Vector3 ReadFromJsonSystem_Numerics_Vector3(this ZRJsonTextReader reader) 
+    {
+        var self = default(System.Numerics.Vector3);
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.PropertyName)
+            {
+                var __name = (string) reader.Value;
+                reader.Read();
+                switch(__name)
+                {
+                    case "X":
+                    self.X = CodeGenImplTools.ReadJsonFloat(reader);
+                    break;
+                    case "Y":
+                    self.Y = CodeGenImplTools.ReadJsonFloat(reader);
+                    break;
+                    case "Z":
+                    self.Z = CodeGenImplTools.ReadJsonFloat(reader);
+                    break;
+                }
+            }
+            else if (reader.TokenType == JsonToken.EndObject) { break; }
+        }
+        return self;
+    }
+    public static void WriteJson(this System.Numerics.Vector3 self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartObject();
+        writer.WritePropertyName("X");
+        writer.WriteValue(self.X);
+        writer.WritePropertyName("Y");
+        writer.WriteValue(self.Y);
+        writer.WritePropertyName("Z");
+        writer.WriteValue(self.Z);
+        writer.WriteEndObject();
+    }
+    public static void UpdateFrom(this ZergRush.Alive.LivableList<ZergRush.CodeGen.Tests.SerializableLivableLeaf> self, ZergRush.Alive.LivableList<ZergRush.CodeGen.Tests.SerializableLivableLeaf> other, ZRUpdateFromHelper __helper) 
+    {
+        self.__update_mod = true;
+        int i = 0;
+        int oldCount = self.Count;
+        int crossCount = Math.Min(oldCount, other.Count);
+        for (; i < crossCount; ++i)
+        {
+            if (other[i] == null) {
+                self[i] = null;
+            }
+            else { 
+                if (self[i] == null) {
+                    self[i] = new ZergRush.CodeGen.Tests.SerializableLivableLeaf();
+                }
+                self[i].UpdateFrom(other[i], __helper);
+            }
+        }
+        for (; i < other.Count; ++i)
+        {
+            var inst = new ZergRush.CodeGen.Tests.SerializableLivableLeaf();
+            self.AddCopy(inst, other[i], __helper);
+        }
+        for (; i < oldCount; ++i)
+        {
+            self.RemoveAt(self.Count - 1);
+        }
+        self.__update_mod = false;
+    }
+    public static void Deserialize(this ZergRush.Alive.LivableList<ZergRush.CodeGen.Tests.SerializableLivableLeaf> self, ZRBinaryReader reader) 
+    {
+        self.__update_mod = true;
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        self.Capacity = size;
+        for (int i = 0; i < size; i++)
+        {
+            self.Add(null);
+            if (!reader.ReadBoolean()) continue;
+            self[self.Count - 1] = new ZergRush.CodeGen.Tests.SerializableLivableLeaf();
+            self[self.Count - 1].Deserialize(reader);
+        }
+        self.__update_mod = false;
+    }
+    public static void Serialize(this ZergRush.Alive.LivableList<ZergRush.CodeGen.Tests.SerializableLivableLeaf> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                self[i].Serialize(writer);
+            }
+        }
+    }
+    public static ulong CalculateHash(this ZergRush.Alive.LivableList<ZergRush.CodeGen.Tests.SerializableLivableLeaf> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)203909577;
+        hash += hash << 11; hash ^= hash >> 7;
+        var size = self.Count;
+        for (int i = 0; i < size; i++)
+        {
+            hash += self[i] != null ? self[i].CalculateHash(__helper) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static void CompareCheck(this ZergRush.Alive.LivableList<ZergRush.CodeGen.Tests.SerializableLivableLeaf> self, ZergRush.Alive.LivableList<ZergRush.CodeGen.Tests.SerializableLivableLeaf> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        var count = Math.Min(self.Count, other.Count);
+        for (int i = 0; i < count; i++)
+        {
+            if (CodeGenImplTools.CompareNull(__helper, i.ToString(), printer, self[i], other[i])) {
+                __helper.Push(i.ToString());
+                self[i].CompareCheck(other[i], __helper, printer);
+                __helper.Pop();
+            }
+        }
+    }
+    public static bool ReadFromJson(this ZergRush.Alive.LivableList<ZergRush.CodeGen.Tests.SerializableLivableLeaf> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        self.__update_mod = true;
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            self.Add(null);
+            if (reader.TokenType == JsonToken.Null) continue;
+            ZergRush.CodeGen.Tests.SerializableLivableLeaf __temp = default;
+            __temp = new ZergRush.CodeGen.Tests.SerializableLivableLeaf();
+            __temp.ReadFromJson(reader);
+            self[self.Count - 1] = __temp;
+        }
+        self.__update_mod = false;
+        return true;
+    }
+    public static void WriteJson(this ZergRush.Alive.LivableList<ZergRush.CodeGen.Tests.SerializableLivableLeaf> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                self[i].WriteJson(writer);
+            }
+        }
+        writer.WriteEndArray();
+    }
+    public static void UpdateFrom(this SimpleList<int> self, SimpleList<int> other, ZRUpdateFromHelper __helper) 
+    {
+        int i = 0;
+        int oldCount = self.Count;
+        int crossCount = Math.Min(oldCount, other.Count);
+        for (; i < crossCount; ++i)
+        {
+            self[i] = other[i];
+        }
+        for (; i < other.Count; ++i)
+        {
+            var inst = other[i];
+            self.Add(inst);
+        }
+        for (; i < oldCount; ++i)
+        {
+            self.RemoveAt(self.Count - 1);
+        }
+    }
+    public static void Deserialize(this SimpleList<int> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        if(size > 100000) throw new ZergRushCorruptedOrInvalidDataLayout();
+        self.Capacity = size;
+        for (int i = 0; i < size; i++)
+        {
+            int val = default;
+            val = reader.ReadInt32();
+            self.Add(val);
+        }
+    }
+    public static void Serialize(this SimpleList<int> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            writer.Write(self[i]);
+        }
+    }
+    public static ulong CalculateHash(this SimpleList<int> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)2032012577;
+        hash += hash << 11; hash ^= hash >> 7;
+        var size = self.Count;
+        for (int i = 0; i < size; i++)
+        {
+            hash += (ulong)self[i];
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static void CompareCheck(this SimpleList<int> self, SimpleList<int> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        var count = Math.Min(self.Count, other.Count);
+        for (int i = 0; i < count; i++)
+        {
+            if (self[i] != other[i]) CodeGenImplTools.LogCompError(__helper, i.ToString(), printer, other[i], self[i]);
+        }
+    }
+    public static bool ReadFromJson(this SimpleList<int> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            int val = default;
+            val = (int)(Int64)reader.Value;
+            self.Add(val);
+        }
+        return true;
+    }
+    public static void WriteJson(this SimpleList<int> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            writer.WriteValue(self[i]);
+        }
+        writer.WriteEndArray();
+    }
     public static void UpdateFrom(ref this ZergRush.Samples.CustomStruct self, ZergRush.Samples.CustomStruct other, ZRUpdateFromHelper __helper) 
     {
         self.id = other.id;

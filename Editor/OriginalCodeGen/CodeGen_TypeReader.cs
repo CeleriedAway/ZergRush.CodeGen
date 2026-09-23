@@ -212,7 +212,9 @@ namespace ZergRush.CodeGen
             IEnumerable<ZRMember> Filter(IEnumerable<ZRMember> members)
             {
                 return ignoreCheck
-                    ? members.Where(member => (member.IgnoreFlags & flagRestriction) == 0)
+                    ? members.Where(member => (flagRestriction == GenTaskFlags.None || (member.IncludeFlags & flagRestriction) != 0) &&
+                        ((member.IgnoreFlags |
+                        (member.MemberType.GetAttribute<GenIgnore>(true)?.flags ?? GenTaskFlags.None)) & flagRestriction) == 0)
                     : members;
             }
 

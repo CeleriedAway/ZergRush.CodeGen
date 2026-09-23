@@ -249,8 +249,8 @@ namespace ZergRush.CodeGen
                 baseReadCall = (s, info1) =>
                 {
                     string name = info1.Access;
-                    string newCountName = $"{name.Replace('[', '_').Replace(']', '_')}Count";
-                    string tempVarName = $"{name.Replace('[', '_').Replace(']', '_')}Temp";
+                    string newCountName = TempNameFor(name) + "Count";
+                    string tempVarName = TempNameFor(name) + "Temp";
                     s.content($"var {newCountName} = {other}.Length;");
                     s.content($"var {tempVarName} = {info1.Access};");
                     s.content($"Array.Resize(ref {tempVarName}, {newCountName});");

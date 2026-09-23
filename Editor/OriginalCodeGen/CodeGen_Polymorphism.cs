@@ -37,7 +37,7 @@ namespace ZergRush.CodeGen
 
         public static bool CanBeAncestor(this Type t)
         {
-            return !t.IsSealed && t.ChildTypes.Count > 0 && t.PolymorphicConstructionRoot() != null;
+            return !t.IsSealed && (t.IsAbstract || t.ChildTypes.Count > 0) && t.PolymorphicConstructionRoot() != null;
         }
 
         static Type PolymorphicConstructionRoot(this Type t)
