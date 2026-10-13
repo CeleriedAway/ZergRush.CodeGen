@@ -1,4 +1,4 @@
-// ZergRush serialization schema: 2 (logical collections, replacement reads, strict JSON)
+// ZergRush serialization schema: 3 (array JSON envelopes, logical collections, replacement reads)
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -901,8 +901,9 @@ public static partial class SerializationExtensions
             reader.Budget.ReserveElement<ZergRush.Samples.CodeGenSamples>(self.Count + 1);
             if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
             ZergRush.Samples.CodeGenSamples val = default;
-            val = (ZergRush.Samples.CodeGenSamples)ZergRush.Samples.CodeGenSamples.CreatePolymorphic(reader.ReadJsonClassId());
-            val.ReadFromJson(reader);
+            var __valFrame = reader.BeginObject(true, false);
+            val = (ZergRush.Samples.CodeGenSamples)ZergRush.Samples.CodeGenSamples.CreatePolymorphic(__valFrame.ClassId);
+            reader.ReadObject(val, __valFrame);
             self.Add(val);
         }
         return true;
@@ -1134,8 +1135,9 @@ public static partial class SerializationExtensions
             reader.Budget.ReserveElement<ZergRush.Samples.TestPolyGenericParent>(self.Count + 1);
             if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
             ZergRush.Samples.TestPolyGenericParent val = default;
-            val = (ZergRush.Samples.TestPolyGenericParent)ZergRush.Samples.TestPolyGenericParent.CreatePolymorphic(reader.ReadJsonClassId());
-            val.ReadFromJson(reader);
+            var __valFrame = reader.BeginObject(true, false);
+            val = (ZergRush.Samples.TestPolyGenericParent)ZergRush.Samples.TestPolyGenericParent.CreatePolymorphic(__valFrame.ClassId);
+            reader.ReadObject(val, __valFrame);
             self.Add(val);
         }
         return true;
@@ -2426,6 +2428,677 @@ public static partial class SerializationExtensions
         writer.WriteValue(self.Z);
         writer.WriteEndObject();
     }
+    public static void UpdateFrom(this ZergRush.CodeGen.Tests.JsonArrayNode[] self, ZergRush.CodeGen.Tests.JsonArrayNode[] other, ZRUpdateFromHelper __helper) 
+    {
+        for (int i = 0; i < self.Length; i++)
+        {
+            if (other[i] == null) {
+                self[i] = null;
+            }
+            else { 
+                var self_i_ClassId = other[i].GetClassId();
+                if (self[i] == null || self[i].GetClassId() != self_i_ClassId) {
+                    self[i] = (ZergRush.CodeGen.Tests.JsonArrayNode)other[i].NewInst();
+                }
+                self[i].UpdateFrom(other[i], __helper);
+            }
+        }
+    }
+    public static void UpdateFrom(this ZergRush.ReactiveCore.Cell<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZergRush.ReactiveCore.Cell<ZergRush.CodeGen.Tests.JsonArrayNode> other, ZRUpdateFromHelper __helper) 
+    {
+
+    }
+    public static void UpdateFrom(this System.Collections.Generic.Dictionary<string, ZergRush.CodeGen.Tests.JsonArrayNode> self, System.Collections.Generic.Dictionary<string, ZergRush.CodeGen.Tests.JsonArrayNode> other, ZRUpdateFromHelper __helper) 
+    {
+        if (other.Count == 0) { self.Clear(); return; }
+        string[] __keysToRemove = null;
+        int __removeCount = 0;
+        foreach (var __pair in self)
+        {
+            if (!other.ContainsKey(__pair.Key))
+            {
+                __keysToRemove ??= new string[self.Count];
+                __keysToRemove[__removeCount++] = __pair.Key;
+            }
+        }
+        for (int __i = 0; __i < __removeCount; ++__i)
+        {
+            self.Remove(__keysToRemove[__i]);
+        }
+        foreach (var __pair in other)
+        {
+            if (self.TryGetValue(__pair.Key, out var __value))
+            {
+                if (__pair.Value == null) {
+                    __value = null;
+                }
+                else { 
+                    var __valueClassId = __pair.Value.GetClassId();
+                    if (__value == null || __value.GetClassId() != __valueClassId) {
+                        __value = (ZergRush.CodeGen.Tests.JsonArrayNode)__pair.Value.NewInst();
+                    }
+                    __value.UpdateFrom(__pair.Value, __helper);
+                }
+            }
+            else
+            {
+                if (__pair.Value == null) {
+                    __value = null;
+                }
+                else { 
+                    __value = (ZergRush.CodeGen.Tests.JsonArrayNode)__pair.Value.NewInst();
+                    __value.UpdateFrom(__pair.Value, __helper);
+                }
+            }
+            self[__pair.Key] = __value;
+        }
+    }
+    public static void UpdateFrom(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode> self, System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode> other, ZRUpdateFromHelper __helper) 
+    {
+        int i = 0;
+        int oldCount = self.Count;
+        int crossCount = Math.Min(oldCount, other.Count);
+        for (; i < crossCount; ++i)
+        {
+            if (other[i] == null) {
+                self[i] = null;
+            }
+            else { 
+                var self_i_ClassId = other[i].GetClassId();
+                if (self[i] == null || self[i].GetClassId() != self_i_ClassId) {
+                    self[i] = (ZergRush.CodeGen.Tests.JsonArrayNode)other[i].NewInst();
+                }
+                self[i].UpdateFrom(other[i], __helper);
+            }
+        }
+        for (; i < other.Count; ++i)
+        {
+            ZergRush.CodeGen.Tests.JsonArrayNode inst = default;
+            if (other[i] == null) {
+                inst = null;
+            }
+            else { 
+                inst = (ZergRush.CodeGen.Tests.JsonArrayNode)other[i].NewInst();
+                inst.UpdateFrom(other[i], __helper);
+            }
+            self.Add(inst);
+        }
+        for (; i < oldCount; ++i)
+        {
+            self.RemoveAt(self.Count - 1);
+        }
+    }
+    public static void UpdateFrom(this ZergRush.ReactiveCore.ReactiveCollection<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZergRush.ReactiveCore.ReactiveCollection<ZergRush.CodeGen.Tests.JsonArrayNode> other, ZRUpdateFromHelper __helper) 
+    {
+        int i = 0;
+        int oldCount = self.Count;
+        int crossCount = Math.Min(oldCount, other.Count);
+        for (; i < crossCount; ++i)
+        {
+            if (other[i] == null) {
+                self[i] = null;
+            }
+            else { 
+                var self_i_ClassId = other[i].GetClassId();
+                if (self[i] == null || self[i].GetClassId() != self_i_ClassId) {
+                    self[i] = (ZergRush.CodeGen.Tests.JsonArrayNode)other[i].NewInst();
+                }
+                self[i].UpdateFrom(other[i], __helper);
+            }
+        }
+        for (; i < other.Count; ++i)
+        {
+            ZergRush.CodeGen.Tests.JsonArrayNode inst = default;
+            if (other[i] == null) {
+                inst = null;
+            }
+            else { 
+                inst = (ZergRush.CodeGen.Tests.JsonArrayNode)other[i].NewInst();
+                inst.UpdateFrom(other[i], __helper);
+            }
+            self.Add(inst);
+        }
+        for (; i < oldCount; ++i)
+        {
+            self.RemoveAt(self.Count - 1);
+        }
+    }
+    public static ZergRush.CodeGen.Tests.JsonArrayNode[] ReadZergRush_CodeGen_Tests_JsonArrayNode_Array(this ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        reader.Budget.Reserve<ZergRush.CodeGen.Tests.JsonArrayNode>(size);
+        var array = new ZergRush.CodeGen.Tests.JsonArrayNode[size];
+        for (int i = 0; i < size; i++)
+        {
+            if (!reader.ReadBoolean()) { array[i] = null; continue; }
+            array[i] = (ZergRush.CodeGen.Tests.JsonArrayNode)ZergRush.CodeGen.Tests.JsonArrayNode.CreatePolymorphic(reader.ReadUInt16());
+            array[i].Deserialize(reader);
+        }
+        return array;
+    }
+    public static void Deserialize(this System.Collections.Generic.Dictionary<string, ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        reader.Budget.Reserve<string>(size);
+        reader.Budget.Reserve<ZergRush.CodeGen.Tests.JsonArrayNode>(size);
+        self.Clear();
+        for (int i = 0; i < size; i++)
+        {
+            var key = default(string);
+            key = string.Empty;
+            key = reader.ReadString();
+            if (!reader.ReadBoolean()) { self.Add(key, null); continue; }
+            var val = default(ZergRush.CodeGen.Tests.JsonArrayNode);
+            val = (ZergRush.CodeGen.Tests.JsonArrayNode)ZergRush.CodeGen.Tests.JsonArrayNode.CreatePolymorphic(reader.ReadUInt16());
+            val.Deserialize(reader);
+            self.Add(key, val);
+        }
+    }
+    public static void Deserialize(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        reader.Budget.Reserve<ZergRush.CodeGen.Tests.JsonArrayNode>(size);
+        self.Clear();
+        self.Capacity = size;
+        for (int i = 0; i < size; i++)
+        {
+            if (!reader.ReadBoolean()) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.JsonArrayNode val = default;
+            val = (ZergRush.CodeGen.Tests.JsonArrayNode)ZergRush.CodeGen.Tests.JsonArrayNode.CreatePolymorphic(reader.ReadUInt16());
+            val.Deserialize(reader);
+            self.Add(val);
+        }
+    }
+    public static void Deserialize(this ZergRush.ReactiveCore.ReactiveCollection<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        reader.Budget.Reserve<ZergRush.CodeGen.Tests.JsonArrayNode>(size);
+        self.Clear();
+        for (int i = 0; i < size; i++)
+        {
+            if (!reader.ReadBoolean()) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.JsonArrayNode val = default;
+            val = (ZergRush.CodeGen.Tests.JsonArrayNode)ZergRush.CodeGen.Tests.JsonArrayNode.CreatePolymorphic(reader.ReadUInt16());
+            val.Deserialize(reader);
+            self.Add(val);
+        }
+    }
+    public static void Serialize(this ZergRush.CodeGen.Tests.JsonArrayNode[] self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Length);
+        for (int i = 0; i < self.Length; i++)
+        {
+            if (!(self[i] != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                writer.Write(self[i].GetClassId());
+                self[i].Serialize(writer);
+            }
+        }
+    }
+    public static void Serialize(this System.Collections.Generic.Dictionary<string, ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        foreach (var item in self)
+        {
+            writer.Write(item.Key);
+            if (!(item.Value != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                writer.Write(item.Value.GetClassId());
+                item.Value.Serialize(writer);
+            }
+        }
+    }
+    public static void Serialize(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                writer.Write(self[i].GetClassId());
+                self[i].Serialize(writer);
+            }
+        }
+    }
+    public static void Serialize(this ZergRush.ReactiveCore.ReactiveCollection<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                writer.Write(self[i].GetClassId());
+                self[i].Serialize(writer);
+            }
+        }
+    }
+    public static ulong CalculateHash(this ZergRush.CodeGen.Tests.JsonArrayNode[] self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)1540027002;
+        hash += hash << 11; hash ^= hash >> 7;
+        var size = self.Length;
+        for (int i = 0; i < size; i++)
+        {
+            hash += self[i] != null ? self[i].CalculateHash(__helper) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static ulong CalculateHash(this System.Collections.Generic.Dictionary<string, ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)639239793;
+        hash += hash << 11; hash ^= hash >> 7;
+        foreach (var item in self)
+        {
+            hash += item.Key != null ? CodeGenImplTools.CalculateStringHash(item.Key) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+            hash += item.Value.CalculateHash(__helper);
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static ulong CalculateHash(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)359440710;
+        hash += hash << 11; hash ^= hash >> 7;
+        var size = self.Count;
+        for (int i = 0; i < size; i++)
+        {
+            hash += self[i] != null ? self[i].CalculateHash(__helper) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static ulong CalculateHash(this ZergRush.ReactiveCore.ReactiveCollection<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)1025231816;
+        hash += hash << 11; hash ^= hash >> 7;
+        var size = self.Count;
+        for (int i = 0; i < size; i++)
+        {
+            hash += self[i] != null ? self[i].CalculateHash(__helper) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static void CompareCheck(this ZergRush.CodeGen.Tests.JsonArrayNode[] self, ZergRush.CodeGen.Tests.JsonArrayNode[] other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Length != other.Length) CodeGenImplTools.LogCompError(__helper, "Length", printer, other.Length, self.Length);
+        var count = Math.Min(self.Length, other.Length);
+        for (int i = 0; i < count; i++)
+        {
+            if (CodeGenImplTools.CompareNull(__helper, i.ToString(), printer, self[i], other[i])) {
+                if (CodeGenImplTools.CompareClassId(__helper, i.ToString(), printer, self[i], other[i])) {
+                    __helper.Push(i.ToString());
+                    self[i].CompareCheck(other[i], __helper, printer);
+                    __helper.Pop();
+                }
+            }
+        }
+    }
+    public static void CompareCheck(this System.Collections.Generic.Dictionary<string, ZergRush.CodeGen.Tests.JsonArrayNode> self, System.Collections.Generic.Dictionary<string, ZergRush.CodeGen.Tests.JsonArrayNode> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        foreach (var item in self)
+        {
+            if (!other.TryGetValue(item.Key, out var otherValue))
+            {
+                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)"missing", (object)item.Value);
+            }
+            else
+            {
+                if (CodeGenImplTools.CompareNull(__helper, item.Key.ToString(), printer, item.Value, otherValue)) {
+                    if (CodeGenImplTools.CompareClassId(__helper, item.Key.ToString(), printer, item.Value, otherValue)) {
+                        __helper.Push(item.Key.ToString());
+                        item.Value.CompareCheck(otherValue, __helper, printer);
+                        __helper.Pop();
+                    }
+                }
+            }
+        }
+        foreach (var item in other)
+        {
+            if (!self.ContainsKey(item.Key))
+            {
+                CodeGenImplTools.LogCompError(__helper, item.Key.ToString(), printer, (object)item.Value, (object)"missing");
+            }
+        }
+    }
+    public static void CompareCheck(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode> self, System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        var count = Math.Min(self.Count, other.Count);
+        for (int i = 0; i < count; i++)
+        {
+            if (CodeGenImplTools.CompareNull(__helper, i.ToString(), printer, self[i], other[i])) {
+                if (CodeGenImplTools.CompareClassId(__helper, i.ToString(), printer, self[i], other[i])) {
+                    __helper.Push(i.ToString());
+                    self[i].CompareCheck(other[i], __helper, printer);
+                    __helper.Pop();
+                }
+            }
+        }
+    }
+    public static void CompareCheck(this ZergRush.ReactiveCore.ReactiveCollection<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZergRush.ReactiveCore.ReactiveCollection<ZergRush.CodeGen.Tests.JsonArrayNode> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        var count = Math.Min(self.Count, other.Count);
+        for (int i = 0; i < count; i++)
+        {
+            if (CodeGenImplTools.CompareNull(__helper, i.ToString(), printer, self[i], other[i])) {
+                if (CodeGenImplTools.CompareClassId(__helper, i.ToString(), printer, self[i], other[i])) {
+                    __helper.Push(i.ToString());
+                    self[i].CompareCheck(other[i], __helper, printer);
+                    __helper.Pop();
+                }
+            }
+        }
+    }
+    public static ZergRush.CodeGen.Tests.JsonArrayNode[] ReadFromJson(this ZergRush.CodeGen.Tests.JsonArrayNode[] self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        var __items = new System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode>();
+        while (true)
+        {
+            reader.ReadRequired();
+            if (reader.TokenType == JsonToken.EndArray) break;
+            reader.Budget.ReserveElement<ZergRush.CodeGen.Tests.JsonArrayNode>(__items.Count + 1);
+            if (reader.TokenType == JsonToken.Null) { __items.Add(null); continue; }
+            ZergRush.CodeGen.Tests.JsonArrayNode val = default;
+            var __valFrame = reader.BeginObject(true, false);
+            val = (ZergRush.CodeGen.Tests.JsonArrayNode)ZergRush.CodeGen.Tests.JsonArrayNode.CreatePolymorphic(__valFrame.ClassId);
+            reader.ReadObject(val, __valFrame);
+            __items.Add(val);
+        }
+        return __items.ToArray();
+    }
+    public static void WriteJson(this ZergRush.CodeGen.Tests.JsonArrayNode[] self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Length; i++)
+        {
+            if (!(self[i] != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                self[i].WriteJson(writer);
+            }
+        }
+        writer.WriteEndArray();
+    }
+    public static bool ReadFromJson(this System.Collections.Generic.Dictionary<string, ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        self.Clear();
+        while (true)
+        {
+            reader.ReadRequired();
+            if (reader.TokenType == JsonToken.EndArray) { break; }
+            if (reader.TokenType != JsonToken.StartObject) throw new JsonSerializationException("Bad Json Format");
+            reader.Budget.ReserveElement<string>(self.Count + 1);
+            reader.Budget.ReserveElement<ZergRush.CodeGen.Tests.JsonArrayNode>(self.Count + 1);
+            reader.ReadRequired();
+            reader.RequireToken(JsonToken.PropertyName);
+            if ((string)reader.Value != "key") throw new JsonSerializationException("Expected dictionary key.");
+            reader.ReadRequired();
+            string key = default;
+            key = string.Empty;
+            key = (string) reader.Value;
+            reader.ReadRequired();
+            reader.RequireToken(JsonToken.PropertyName);
+            if ((string)reader.Value != "value") throw new JsonSerializationException("Expected dictionary value.");
+            reader.ReadRequired();
+            ZergRush.CodeGen.Tests.JsonArrayNode val = default;
+            if (reader.TokenType == JsonToken.Null) {
+                val = null;
+            }
+            else { 
+                var __valFrame = reader.BeginObject(true, false);
+                val = (ZergRush.CodeGen.Tests.JsonArrayNode)ZergRush.CodeGen.Tests.JsonArrayNode.CreatePolymorphic(__valFrame.ClassId);
+                reader.ReadObject(val, __valFrame);
+            }
+            reader.ReadRequired();
+            reader.RequireToken(JsonToken.EndObject);
+            self.Add(key, val);
+        }
+        return true;
+    }
+    public static void WriteJson(this System.Collections.Generic.Dictionary<string, ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        foreach (var item in self)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("key");
+            writer.WriteValue(item.Key);
+            writer.WritePropertyName("value");
+            if (!(item.Value != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                item.Value.WriteJson(writer);
+            }
+            writer.WriteEndObject();
+        }
+        writer.WriteEndArray();
+    }
+    public static bool ReadFromJson(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        self.Clear();
+        while (true)
+        {
+            reader.ReadRequired();
+            if (reader.TokenType == JsonToken.EndArray) break;
+            reader.Budget.ReserveElement<ZergRush.CodeGen.Tests.JsonArrayNode>(self.Count + 1);
+            if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.JsonArrayNode val = default;
+            var __valFrame = reader.BeginObject(true, false);
+            val = (ZergRush.CodeGen.Tests.JsonArrayNode)ZergRush.CodeGen.Tests.JsonArrayNode.CreatePolymorphic(__valFrame.ClassId);
+            reader.ReadObject(val, __valFrame);
+            self.Add(val);
+        }
+        return true;
+    }
+    public static void WriteJson(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                self[i].WriteJson(writer);
+            }
+        }
+        writer.WriteEndArray();
+    }
+    public static bool ReadFromJson(this ZergRush.ReactiveCore.ReactiveCollection<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        self.Clear();
+        while (true)
+        {
+            reader.ReadRequired();
+            if (reader.TokenType == JsonToken.EndArray) break;
+            reader.Budget.ReserveElement<ZergRush.CodeGen.Tests.JsonArrayNode>(self.Count + 1);
+            if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.JsonArrayNode val = default;
+            var __valFrame = reader.BeginObject(true, false);
+            val = (ZergRush.CodeGen.Tests.JsonArrayNode)ZergRush.CodeGen.Tests.JsonArrayNode.CreatePolymorphic(__valFrame.ClassId);
+            reader.ReadObject(val, __valFrame);
+            self.Add(val);
+        }
+        return true;
+    }
+    public static void WriteJson(this ZergRush.ReactiveCore.ReactiveCollection<ZergRush.CodeGen.Tests.JsonArrayNode> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                self[i].WriteJson(writer);
+            }
+        }
+        writer.WriteEndArray();
+    }
+    public static void UpdateFrom(this ZergRush.ReactiveCore.Cell<ZergRush.CodeGen.Tests.JsonExistingPlain> self, ZergRush.ReactiveCore.Cell<ZergRush.CodeGen.Tests.JsonExistingPlain> other, ZRUpdateFromHelper __helper) 
+    {
+
+    }
+    public static void UpdateFrom(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonPolyReference> self, System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonPolyReference> other, ZRUpdateFromHelper __helper) 
+    {
+        int i = 0;
+        int oldCount = self.Count;
+        int crossCount = Math.Min(oldCount, other.Count);
+        for (; i < crossCount; ++i)
+        {
+            var __self_i_ = self[i];
+            if (other[i] == null) {
+                __self_i_ = null;
+            }
+            else { 
+                var __self_i_ClassId = other[i].GetClassId();
+                if (__self_i_ == null || __self_i_.GetClassId() != __self_i_ClassId) {
+                    __self_i_ = (ZergRush.CodeGen.Tests.JsonPolyReference)other[i].NewInst();
+                }
+                if (!__helper.TryLoadAlreadyUpdated(other[i], ref __self_i_)) __self_i_.UpdateFrom(other[i], __helper);
+            }
+            self[i] = __self_i_;
+        }
+        for (; i < other.Count; ++i)
+        {
+            ZergRush.CodeGen.Tests.JsonPolyReference inst = default;
+            if (other[i] == null) {
+                inst = null;
+            }
+            else { 
+                inst = (ZergRush.CodeGen.Tests.JsonPolyReference)other[i].NewInst();
+                if (!__helper.TryLoadAlreadyUpdated(other[i], ref inst)) inst.UpdateFrom(other[i], __helper);
+            }
+            self.Add(inst);
+        }
+        for (; i < oldCount; ++i)
+        {
+            self.RemoveAt(self.Count - 1);
+        }
+    }
+    public static void Deserialize(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonPolyReference> self, ZRBinaryReader reader) 
+    {
+        var size = reader.ReadInt32();
+        reader.Budget.Reserve<ZergRush.CodeGen.Tests.JsonPolyReference>(size);
+        self.Clear();
+        self.Capacity = size;
+        for (int i = 0; i < size; i++)
+        {
+            if (!reader.ReadBoolean()) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.JsonPolyReference val = default;
+            val = (ZergRush.CodeGen.Tests.JsonPolyReference)ZergRush.CodeGen.Tests.JsonPolyReference.CreatePolymorphic(reader.ReadUInt16());
+            reader.ReadFromRef(ref val);
+            self.Add(val);
+        }
+    }
+    public static void Serialize(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonPolyReference> self, ZRBinaryWriter writer) 
+    {
+        writer.Write(self.Count);
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null)) writer.Write(false);
+            else {
+                writer.Write(true);
+                writer.Write(self[i].GetClassId());
+                writer.WriteObjectWithRef(self[i]);
+            }
+        }
+    }
+    public static ulong CalculateHash(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonPolyReference> self, ZRHashHelper __helper) 
+    {
+        ulong hash = 345093625;
+        hash ^= (ulong)359440710;
+        hash += hash << 11; hash ^= hash >> 7;
+        var size = self.Count;
+        for (int i = 0; i < size; i++)
+        {
+            hash += self[i] != null ? __helper.CalculateHash(self[i]) : 345093625;
+            hash += hash << 11; hash ^= hash >> 7;
+        }
+        return hash;
+    }
+    public static void CompareCheck(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonPolyReference> self, System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonPolyReference> other, ZRCompareCheckHelper __helper, Action<string> printer) 
+    {
+        if (self.Count != other.Count) CodeGenImplTools.LogCompError(__helper, "Count", printer, other.Count, self.Count);
+        var count = Math.Min(self.Count, other.Count);
+        for (int i = 0; i < count; i++)
+        {
+            if (CodeGenImplTools.CompareNull(__helper, i.ToString(), printer, self[i], other[i])) {
+                if (CodeGenImplTools.CompareClassId(__helper, i.ToString(), printer, self[i], other[i])) {
+                    if (__helper.NeedCompareCheck(i.ToString(), printer, self[i], other[i])) {
+                        __helper.Push(i.ToString());
+                        self[i].CompareCheck(other[i], __helper, printer);
+                        __helper.Pop();
+                    }
+                }
+            }
+        }
+    }
+    public static bool ReadFromJson(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonPolyReference> self, ZRJsonTextReader reader) 
+    {
+        if (reader.TokenType != JsonToken.StartArray) throw new JsonSerializationException("Bad Json Format");
+        self.Clear();
+        while (true)
+        {
+            reader.ReadRequired();
+            if (reader.TokenType == JsonToken.EndArray) break;
+            reader.Budget.ReserveElement<ZergRush.CodeGen.Tests.JsonPolyReference>(self.Count + 1);
+            if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
+            ZergRush.CodeGen.Tests.JsonPolyReference val = default;
+            var __valFrame = reader.BeginObject(true, true);
+            if (reader.TryGetReference<ZergRush.CodeGen.Tests.JsonPolyReference>(__valFrame, out var __valFrameValue)) val = __valFrameValue;
+            else
+            {
+                val = (ZergRush.CodeGen.Tests.JsonPolyReference)ZergRush.CodeGen.Tests.JsonPolyReference.CreatePolymorphic(__valFrame.ClassId);
+            }
+            reader.ReadObject(val, __valFrame);
+            self.Add(val);
+        }
+        return true;
+    }
+    public static void WriteJson(this System.Collections.Generic.List<ZergRush.CodeGen.Tests.JsonPolyReference> self, ZRJsonTextWriter writer) 
+    {
+        writer.WriteStartArray();
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (!(self[i] != null))
+            {
+                writer.WriteNull();
+            }
+            else
+            {
+                writer.WriteObjectWithRef(self[i]);
+            }
+        }
+        writer.WriteEndArray();
+    }
     public static void UpdateFrom(this long[] self, long[] other, ZRUpdateFromHelper __helper) 
     {
         for (int i = 0; i < self.Length; i++)
@@ -3016,8 +3689,9 @@ public static partial class SerializationExtensions
                 if (reader.TokenType == JsonToken.Null) { self.Add(null); continue; }
                 self.Add(null);
                 ZergRush.CodeGen.Tests.SerializableLivableLeaf val = default;
+                var __valFrame = reader.BeginObject(true, false);
                 val = new ZergRush.CodeGen.Tests.SerializableLivableLeaf();
-                val.ReadFromJson(reader);
+                reader.ReadObject(val, __valFrame);
                 self[self.Count - 1] = val;
             }
         }

@@ -155,7 +155,7 @@ public static class CodeGenExtensions
     public static void WriteToJsonFile<T>(this T data, string path, bool formatting = true) where T : IJsonSerializable
     {
         using var stream = File.CreateText(path);
-        var writer = new ZRJsonTextWriter(stream);
+        using var writer = new ZRJsonTextWriter(stream);
         writer.Formatting = formatting ? Formatting.Indented : Formatting.None;
         data.WriteJson(writer);
     }
@@ -164,6 +164,8 @@ public static class CodeGenExtensions
     {
         using var stream = File.OpenText(path);
         using var reader = new ZRJsonTextReader(stream);
+        reader.ReadRequired();
+        if (reader.TokenType == JsonToken.Null) { reader.CompleteRoot(); return default; }
         var data = new T();
         data.ReadRootFromJson(reader);
         return data;
@@ -172,7 +174,7 @@ public static class CodeGenExtensions
     public static string WriteToJsonString<T>(this T data, bool formatting = true) where T : IJsonSerializable
     {
         using var stream = new StringWriter();
-        var writer = new ZRJsonTextWriter(stream);
+        using var writer = new ZRJsonTextWriter(stream);
         writer.Formatting = formatting ? Formatting.Indented : Formatting.None;
         data.WriteJson(writer);
         return stream.ToString();
@@ -180,20 +182,16 @@ public static class CodeGenExtensions
     
     public static T ReadFromJson<T>(this string content) where T : class, IJsonSerializable, new()
     {
-        var data = new T();
         using var reader = new StringReader(content);
         using var zrJsonTextReader = new ZRJsonTextReader(reader);
-        data.ReadRootFromJson(zrJsonTextReader);
-        return data;
+        return zrJsonTextReader.ReadAsJsonRoot<T>();
     }
 
     public static T ReadFromJson<T>(this T data, string content) where T : class, IJsonSerializable, new()
     {
-        if (data == null) data = new T();
         using var reader = new StringReader(content);
         using var zrJsonTextReader = new ZRJsonTextReader(reader);
-        data.ReadRootFromJson(zrJsonTextReader);
-        return data;
+        return zrJsonTextReader.ReadAsJsonRoot(data);
     }
     
     public static void ReadList<T>(this List<T> data, ZRBinaryReader stream) where T : IBinaryDeserializable, new()

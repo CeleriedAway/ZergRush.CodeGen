@@ -394,14 +394,20 @@ public unsafe static class CodeGenImplTools
     {
         reader.InitRootObject(t);
         if (reader.TokenType == JsonToken.None) reader.ReadRequired();
-        reader.RequireToken(JsonToken.StartObject);
+        if (!(t is IPolymorphable)) reader.RequireToken(JsonToken.StartObject);
         t.ReadFromJson(reader);
-        while (reader.Read())
-            if (reader.TokenType != JsonToken.Comment) throw new JsonSerializationException("Trailing JSON content.");
+        reader.CompleteRoot();
     }
 
     public static void ReadFromJson<T>(this T t, ZRJsonTextReader reader) where T : IJsonSerializable
     {
+        if (t is IPolymorphable)
+        {
+            if (reader.TokenType == JsonToken.None) reader.ReadRequired();
+            reader.ReadObject(t, reader.BeginObject(true));
+            return;
+        }
+        // Ordinary already-created objects retain their existing field-dispatch path.
         if (reader.TokenType == JsonToken.None)
         {
             reader.ReadRequired();
@@ -424,17 +430,7 @@ public unsafe static class CodeGenImplTools
 
     public static ushort ReadJsonClassId(this JsonTextReader reader)
     {
-        reader.Read();
-        if (reader.TokenType == JsonToken.PropertyName && (string)reader.Value == ClassIdName)
-        {
-            return (ushort)reader.ReadAsInt32();
-        }
-        else
-        {
-            throw new ZergRushException("error while reading class id in json");
-        }
-
-        return 0;
+        throw new JsonSerializationException("Regenerate JSON readers with CodeGen serialization schema 3 for array envelopes.");
     }
 
     public static void AddConfigToRegister(this ConfigRegister register, IUniquelyIdentifiable config)

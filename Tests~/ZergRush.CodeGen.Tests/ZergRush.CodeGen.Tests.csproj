@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <InternalsVisibleTo Include="ZergRush.CodeGen.Jsonb.Tests" />
   </ItemGroup>
 
   <ItemGroup>

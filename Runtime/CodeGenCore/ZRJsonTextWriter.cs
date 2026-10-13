@@ -1,7 +1,7 @@
 using System.IO;
+using System.Globalization;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
-using ZergRush;
 
 namespace ZergRush
 {
@@ -22,6 +22,11 @@ namespace ZergRush
             }
         }
 
+        internal void RegisterRootIfNeeded(IJsonSerializable obj)
+        {
+            if (WriteState == WriteState.Start) generator.GetId(obj, out _);
+        }
+
         public void WriteObjectWithRef(IJsonSerializable obj)
         {
             var writer = this;
@@ -31,26 +36,26 @@ namespace ZergRush
                 return;
             }
 
-            writer.WriteStartObject();
+            writer.WriteStartArray();
             var polymorph = obj as IPolymorphable;
             if (polymorph != null)
             {
-                writer.WritePropertyName(CodeGenImplTools.ClassIdName);
                 writer.WriteValue(polymorph.GetClassId());
             }
+            else writer.WriteNull();
 
             var refId = generator.GetId(obj, out bool firstTime);
-            writer.WritePropertyName("isRef");
+            writer.WriteValue(refId.ToString(CultureInfo.InvariantCulture));
             writer.WriteValue(!firstTime);
-
-            writer.WritePropertyName("refId");
-            writer.WriteValue(refId.ToString());
 
             if (firstTime)
             {
+                writer.WriteStartObject();
                 obj.WriteJsonFields(writer);
+                writer.WriteEndObject();
             }
-            writer.WriteEndObject();
+            else writer.WriteNull();
+            writer.WriteEndArray();
         }
     }
 }

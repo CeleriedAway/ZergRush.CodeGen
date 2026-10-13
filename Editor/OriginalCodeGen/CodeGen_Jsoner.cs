@@ -153,7 +153,9 @@ namespace ZergRush.CodeGen
                 directReader: $"{DirectJsonImmutableTypeReader(t)}",
                 needCreateVar: needCreateVar,
                 useTempVarThenAssign: useTempVar || declaredType.HasDataWrapper() &&
-                (info.Type.IsControllableStruct() || info.Type.IsMultipleReference())
+                (info.Type.IsControllableStruct() || info.Type.IsMultipleReference()),
+                jsonFraming: t.IsControllable() && !t.IsValueType &&
+                    (t.PolymorphicConstructionRoot() != null || t.IsMultipleReference())
             );
         }
 

@@ -1,4 +1,4 @@
-// ZergRush serialization schema: 2 (logical collections, replacement reads, strict JSON)
+// ZergRush serialization schema: 3 (array JSON envelopes, logical collections, replacement reads)
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -26,7 +26,8 @@ namespace ZergRush.Samples {
             () => new ZergRush.Samples.TestGenericChild(), // 4
         };
         public static TestPolyGenericParent CreatePolymorphic(ushort typeId) {
-            return polymorphConstructors[typeId]();
+            if (typeId >= polymorphConstructors.Length) throw new ZergRushException("Unknown polymorphic class ID: " + typeId);
+            return polymorphConstructors[typeId]() ?? throw new ZergRushException("Unknown polymorphic class ID: " + typeId);
         }
         public TestPolyGenericParentType type => (TestPolyGenericParentType) GetClassId();
         public virtual void UpdateFrom(ZergRush.Samples.TestPolyGenericParent other, ZRUpdateFromHelper __helper) 

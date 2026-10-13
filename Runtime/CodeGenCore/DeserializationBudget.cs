@@ -8,13 +8,25 @@ namespace ZergRush
     {
         public int MaxCollectionCount { get; }
         public long MaxCollectionStorageBytes { get; }
+        public int MaxReferenceCount { get; }
         long reserved;
+        int references;
 
         public DeserializationBudget(int maxCollectionCount = 100000, long maxCollectionStorageBytes = 64 * 1024 * 1024)
+            : this(maxCollectionCount, maxCollectionStorageBytes, 100000) { }
+
+        public DeserializationBudget(int maxCollectionCount, long maxCollectionStorageBytes, int maxReferenceCount)
         {
-            if (maxCollectionCount < 0 || maxCollectionStorageBytes < 0) throw new ArgumentOutOfRangeException();
+            if (maxCollectionCount < 0 || maxCollectionStorageBytes < 0 || maxReferenceCount < 0) throw new ArgumentOutOfRangeException();
             MaxCollectionCount = maxCollectionCount;
             MaxCollectionStorageBytes = maxCollectionStorageBytes;
+            MaxReferenceCount = maxReferenceCount;
+        }
+
+        public void ReserveReference()
+        {
+            if (references >= MaxReferenceCount) throw new ZergRushCorruptedOrInvalidDataLayout();
+            references++;
         }
 
         public void Reserve<T>(int count)

@@ -16,18 +16,47 @@ namespace ZergRush
             if (json.Length > maxInputCharacters) throw new JsonSerializationException("JSON input budget exceeded.");
             if (migrate != null)
             {
-                var root = JObject.Parse(json, new JsonLoadSettings { DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error });
+                var root = ReadMigrationTree(json) as JObject ?? throw new JsonSerializationException("Object-root migration requires an object root.");
                 var migrated = migrate((JObject)root.DeepClone()) ?? throw new JsonSerializationException("Migration returned no root.");
                 json = migrated.ToString(Formatting.None);
                 if (json.Length > maxInputCharacters) throw new JsonSerializationException("Migrated JSON input budget exceeded.");
             }
-            var value = new T();
             using (var reader = new ZRJsonTextReader(new StringReader(json)))
             {
                 if (budget != null) reader.Budget = budget;
-                value.ReadRootFromJson(reader);
+                return reader.ReadAsJsonRoot<T>();
             }
-            return value;
+        }
+
+        /// <summary>Loads one factory-created polymorphic root. A token-root migration is optional
+        /// and explicit; ordinary loads stream directly without a JSON tree.</summary>
+        public static T ReadPolymorphic<T>(string json, Func<ushort, T> factory,
+            Func<JToken, JToken> migrate = null, DeserializationBudget budget = null,
+            int maxInputCharacters = 16 * 1024 * 1024) where T : class, IJsonSerializable
+        {
+            if (json == null) throw new ArgumentNullException(nameof(json));
+            if (json.Length > maxInputCharacters) throw new JsonSerializationException("JSON input budget exceeded.");
+            if (migrate != null)
+            {
+                var migrated = migrate(ReadMigrationTree(json)) ?? throw new JsonSerializationException("Migration returned no root.");
+                json = migrated.ToString(Formatting.None);
+                if (json.Length > maxInputCharacters) throw new JsonSerializationException("Migrated JSON input budget exceeded.");
+            }
+            using (var reader = new ZRJsonTextReader(json))
+            {
+                if (budget != null) reader.Budget = budget;
+                return reader.ReadPolymorphicRoot(factory);
+            }
+        }
+
+        static JToken ReadMigrationTree(string json)
+        {
+            using (var reader = new ZRJsonTextReader(json))
+            {
+                var root = JToken.Load(reader, new JsonLoadSettings { DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error });
+                reader.CompleteRoot();
+                return root;
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-// ZergRush serialization schema: 2 (logical collections, replacement reads, strict JSON)
+// ZergRush serialization schema: 3 (array JSON envelopes, logical collections, replacement reads)
 using System;
 using System.Collections.Generic;
 using System.Text;

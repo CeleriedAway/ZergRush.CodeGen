@@ -181,3 +181,88 @@ public partial class SafetyEntry
     public long playerId;
     public int score;
 }
+
+[GenTask(GenTaskFlags.PolymorphicDataPack & ~GenTaskFlags.DefaultConstructor)]
+public partial class JsonArrayNode
+{
+    [GenIgnore] public static int Constructions;
+    public JsonArrayNode() { Constructions++; }
+    public int score;
+    public string label = string.Empty;
+    public System.DateTime date;
+    [CanBeNull] public JsonArrayNode nested;
+}
+
+public partial class JsonArrayChild : JsonArrayNode
+{
+    public decimal precise;
+    public ulong large;
+}
+
+[GenTask(GenTaskFlags.SimpleDataPack)]
+public partial class JsonArrayHolder
+{
+    [CanBeNull] public JsonArrayNode item;
+    public List<JsonArrayNode> items;
+    public JsonArrayNode[] array;
+    public ReactiveCollection<JsonArrayNode> reactive;
+    public Dictionary<string, JsonArrayNode> dictionary;
+    [CanBeNull] public Cell<JsonArrayNode> cell;
+    public int tail;
+}
+
+[GenTask(GenTaskFlags.SimpleDataPack & ~GenTaskFlags.DefaultConstructor), GenMultipleRefs]
+public partial class JsonPlainReference
+{
+    [GenIgnore] public static int Constructions;
+    public JsonPlainReference() { Constructions++; }
+    public int score;
+    [CanBeNull] public JsonPlainReference next;
+}
+
+[GenTask(GenTaskFlags.PolymorphicDataPack & ~GenTaskFlags.DefaultConstructor), GenMultipleRefs]
+public partial class JsonPolyReference
+{
+    [GenIgnore] public static int Constructions;
+    public JsonPolyReference() { Constructions++; }
+    public int score;
+    [CanBeNull] public JsonPolyReference next;
+    [CanBeNull] public JsonReferenceRoot owner;
+}
+
+public partial class JsonPolyReferenceChild : JsonPolyReference
+{
+    public int extra;
+}
+
+[GenTask(GenTaskFlags.SimpleDataPack), GenMultipleRefs]
+public partial class JsonReferenceRoot
+{
+    [CanBeNull] public JsonPolyReference first;
+    [CanBeNull] public JsonPolyReference second;
+    [CanBeNull] public JsonPlainReference plainFirst;
+    [CanBeNull] public JsonPlainReference plainSecond;
+    [CanBeNull] public JsonReferenceRoot self;
+    public List<JsonPolyReference> many;
+    public int tail;
+}
+
+[GenTask(GenTaskFlags.SimpleDataPack & ~GenTaskFlags.DefaultConstructor)]
+public partial class JsonExistingPlain
+{
+    [GenIgnore] public static int Constructions;
+    public JsonExistingPlain() { Constructions++; }
+    public int score;
+    public List<int> values = new List<int>();
+    // These are ordinary application fields on a non-polymorphic, untracked object.
+    public string refId = string.Empty;
+    public bool isRef;
+}
+
+[GenTask(GenTaskFlags.SimpleDataPack)]
+public partial class JsonExistingPlainHolder
+{
+    public JsonExistingPlain required;
+    [CanBeNull] public JsonExistingPlain optional;
+    public Cell<JsonExistingPlain> cell;
+}

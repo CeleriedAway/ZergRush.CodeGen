@@ -37,23 +37,25 @@ public static partial class SerializationTools
             return;
         }
 
-        writer.WriteStartObject();
+        writer.RegisterRootIfNeeded(obj);
         var polymorph = obj as IPolymorphable;
         if (polymorph != null)
         {
-            writer.WritePropertyName(CodeGenImplTools.ClassIdName);
+            writer.WriteStartArray();
             writer.WriteValue(polymorph.GetClassId());
         }
-
+        writer.WriteStartObject();
         obj.WriteJsonFields(writer);
         writer.WriteEndObject();
+        if (polymorph != null) writer.WriteEndArray();
     }
 
     public static T ReadAsJsonRoot<T>(this ZRJsonTextReader reader, T obj = null)
         where T : class, IJsonSerializable, new()
     {
+        if (reader.TokenType == JsonToken.None) reader.ReadRequired();
+        if (reader.TokenType == JsonToken.Null) { reader.CompleteRoot(); return null; }
         if (obj == null) obj = new T();
-        reader.Read();
         obj.ReadRootFromJson(reader);
         return obj;
     }

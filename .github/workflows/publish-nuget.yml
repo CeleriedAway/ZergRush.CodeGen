@@ -19,6 +19,19 @@ jobs:
     runs-on: ubuntu-latest
     environment: nuget-release
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: zr_jsonb
+          POSTGRES_PASSWORD: zr_jsonb_test
+          POSTGRES_DB: zergrush_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U zr_jsonb -d zergrush_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+
     steps:
       - name: Checkout CodeGen
         uses: actions/checkout@v4
@@ -56,6 +69,15 @@ jobs:
           dotnet test ZergRush.CodeGen.sln \
             --configuration Release \
             -p:ZergRushReactiveProjectPath="$reactive_project"
+
+      - name: Test PostgreSQL JSONB round trips
+        shell: bash
+        env:
+          ZERGRUSH_JSONB_CONNECTION: "Host=127.0.0.1;Port=5432;Database=zergrush_test;Username=zr_jsonb;Password=zr_jsonb_test"
+        run: |
+          dotnet test Tests~/ZergRush.CodeGen.Jsonb.Tests/ZergRush.CodeGen.Jsonb.Tests.csproj \
+            --configuration Release \
+            -p:ZergRushReactiveProjectPath="$GITHUB_WORKSPACE/external/ZergRush.Reactive/src/ZergRush.Reactive/ZergRush.Reactive.csproj"
 
       - name: Pack
         shell: bash

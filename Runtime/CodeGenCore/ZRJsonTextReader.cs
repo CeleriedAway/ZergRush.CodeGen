@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace ZergRush
@@ -36,16 +34,9 @@ namespace ZergRush
         }
     }
     
-    public class ZRJsonTextReader : JsonTextReader
+    public partial class ZRJsonTextReader : JsonTextReader
     {
         public DeserializationBudget Budget { get; set; } = new DeserializationBudget();
-
-        public override bool Read()
-        {
-            bool result = base.Read();
-            if (!result && Depth != 0) throw new JsonSerializationException("Unexpected end of JSON.");
-            return result;
-        }
 
         public void ReadRequired()
         {
@@ -60,74 +51,37 @@ namespace ZergRush
             if (TokenType != token) throw new JsonSerializationException("Expected " + token + ", got " + TokenType);
         }
 
-        readonly Dictionary<long, object> currentObjects = new Dictionary<long, object>();
+        struct ReferenceEntry
+        {
+            internal IJsonSerializable Value;
+            internal bool Defined;
+        }
+
+        readonly Dictionary<long, ReferenceEntry> currentObjects = new Dictionary<long, ReferenceEntry>();
+        int undefinedReferences;
 
         public ZRJsonTextReader(TextReader reader) : base(reader)
         {
+            DateParseHandling = DateParseHandling.None;
         }
-        public ZRJsonTextReader(string str) : base(new StringReader(str))
+        public ZRJsonTextReader(string str) : this(new StringReader(str))
         {
         }
         
         public void InitRootObject(IJsonSerializable obj)
         {
             currentObjects.Clear();
-            currentObjects[1] = obj;
+            undefinedReferences = 0;
+            Budget.ReserveReference();
+            currentObjects[1] = new ReferenceEntry { Value = obj, Defined = true };
         }
 
         public void ReadFromRef<T>(ref T t) where T : IJsonSerializable
         {
-            bool isReference = ReadIsRef(this);
-            long refId = ReadRef(this);
-            if (isReference)
-            {
-                if (currentObjects.TryGetValue(refId, out object value))
-                {
-                    t = (T) value;
-                    while (TokenType != JsonToken.EndObject) ReadRequired();
-                }
-                else
-                {
-                    throw new ZergRushException(
-                        $"data layout corrupted, can't find reference to {typeof(T)} ref:{refId} in currently processed objects");
-                }
-            }
-            else
-            {
-                currentObjects[refId] = t;
-                t.ReadFromJson(this);
-            }
-        }
-
-        static long ReadRef(JsonTextReader reader)
-        {
-            reader.Read();
-            if (reader.TokenType == JsonToken.PropertyName && (string) reader.Value == "refId")
-            {
-                return long.Parse(reader.ReadAsString());
-            }
-            else
-            {
-                throw new ZergRushException("error while reading is ref in json");
-            }
-        }
-
-        static bool ReadIsRef(JsonTextReader reader)
-        {
-            reader.Read();
-            if (reader.TokenType == JsonToken.PropertyName && (string) reader.Value == CodeGenImplTools.ClassIdName)
-            {
-                reader.Read();
-                reader.Read();
-            }
-            if (reader.TokenType == JsonToken.PropertyName && (string) reader.Value == "isRef")
-            {
-                return (bool) reader.ReadAsBoolean();
-            }
-            else
-            {
-                throw new ZergRushException("error while reading is ref in json");
-            }
+            if (TokenType == JsonToken.Null) { t = default; return; }
+            var frame = BeginObject(t is IPolymorphable, true);
+            if (TryGetReference<T>(frame, out var existing)) t = existing;
+            ReadObject(t, frame);
         }
     }
 }

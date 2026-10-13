@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GeneratedCodeDir>$(MSBuildProjectDirectory)/Generated</GeneratedCodeDir>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(GeneratedCodeDir)/**</DefaultItemExcludes>
+    <CodeGenCliCommand Condition="'$(CodeGenCliCommand)' == ''">dotnet &quot;$(MSBuildProjectDirectory)/../../src/ZergRush.CodeGen.Cli/bin~/$(Configuration)/net10.0/ZergRush.CodeGen.Cli.dll&quot;</CodeGenCliCommand>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="9.0.4" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(BaselineVersion)' == ''">
+    <ProjectReference Include="../../src/ZergRush.CodeGen.Core/ZergRush.CodeGen.Core.csproj" />
+    <ProjectReference Include="../../src/ZergRush.CodeGen.Cli/ZergRush.CodeGen.Cli.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(BaselineVersion)' != ''">
+    <PackageReference Include="ZergRush.CodeGen.Core" Version="$(BaselineVersion)" />
+  </ItemGroup>
+  <Target Name="GenerateFixture" BeforeTargets="CoreCompile" DependsOnTargets="ResolveProjectReferences">
+    <MakeDir Directories="$(GeneratedCodeDir)" />
+    <Exec Command="$(CodeGenCliCommand) --single-output-folder --generate &quot;$(GeneratedCodeDir)&quot; -f &quot;$(MSBuildProjectDirectory)/BenchmarkModels.cs&quot;" />
+    <ItemGroup><Compile Include="$(GeneratedCodeDir)/*.cs" /></ItemGroup>
+  </Target>
+</Project>

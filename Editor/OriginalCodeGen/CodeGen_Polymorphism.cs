@@ -278,7 +278,8 @@ namespace ZergRush.CodeGen
             sink.content(
                 $"public static {baseClass.RealName()} {PolymorphInstanceFuncName}(" +
                 $"{PolymorphClassIdType} typeId) {{");
-            sink.content($"\treturn {constructorsArrayName}[typeId]();");
+            sink.content($"\tif (typeId >= {constructorsArrayName}.Length) throw new ZergRushException(\"Unknown polymorphic class ID: \" + typeId);");
+            sink.content($"\treturn {constructorsArrayName}[typeId]() ?? throw new ZergRushException(\"Unknown polymorphic class ID: \" + typeId);");
             sink.content($"}}");
         }
 

@@ -19,7 +19,7 @@ namespace ZergRush.CodeGen
             string declaredAccess, Type carrierType,
             Action<MethodBuilder, ZRData> baseReadCall, string isNullReader, string classIdReader,
             string directReader, string refInst, bool pooled, Func<Type, string> configIdReader = null,  bool needCreateVar = false,
-            bool useTempVarThenAssign = false)
+            bool useTempVarThenAssign = false, bool jsonFraming = false)
         {
             if (needCreateVar)
             {
@@ -82,6 +82,7 @@ namespace ZergRush.CodeGen
             }
 
             var name = info.Access;
+            var jsonFrame = TempNameFor(name) + "Frame";
 
             if (t.IsImmutableValueType() && !canBeNull)
             {
@@ -109,7 +110,18 @@ namespace ZergRush.CodeGen
                 }
                 else
                 {
-                    if (info.SureIsNull && !info.Type.IsValueType)
+                    if (jsonFraming)
+                    {
+                        sink.content($"var {jsonFrame} = reader.BeginObject({(t.PolymorphicConstructionRoot() != null ? "true" : "false")}, {(t.IsMultipleReference() ? "true" : "false")});");
+                        classIdReader = jsonFrame + ".ClassId";
+                        if (t.IsMultipleReference())
+                        {
+                            sink.content($"if (reader.TryGetReference<{t.RealName(true)}>({jsonFrame}, out var {jsonFrame}Value)) {name} = {jsonFrame}Value;");
+                            sink.content("else");
+                            sink.openBrace();
+                        }
+                    }
+                    if ((info.SureIsNull || jsonFraming && t.IsMultipleReference()) && !info.Type.IsValueType)
                     {
                         CreateNewInstance(sink, info.Type, info.Access, classIdReader, refInst, false,
                             info.CantBeAncestor, carrierType: carrierType);
@@ -140,18 +152,19 @@ namespace ZergRush.CodeGen
                             sink.content($"}}");
                         }
                     }
+                    if (jsonFraming && t.IsMultipleReference()) sink.closeBrace();
                 }
 
                 if (!fromExternalSource)
                 {
-                    baseReadCall(sink, info);
+                    if (jsonFraming) sink.content($"reader.ReadObject({info.Access}, {jsonFrame});");
+                    else baseReadCall(sink, info);
                 }
                 
                 if (t.IsConfig() && !fromExternalSource)
                 {
                     sink.content($"{t.ConfigRootType().RealName(true)}.Instance.RegisterConfig({info.Access});");
                 }
-
                 if (canBeNull)
                 {
                     sink.indent--;

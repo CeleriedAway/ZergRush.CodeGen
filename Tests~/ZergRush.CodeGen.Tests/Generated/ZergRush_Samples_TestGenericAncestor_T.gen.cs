@@ -1,4 +1,4 @@
-// ZergRush serialization schema: 2 (logical collections, replacement reads, strict JSON)
+// ZergRush serialization schema: 3 (array JSON envelopes, logical collections, replacement reads)
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -169,11 +169,12 @@ namespace ZergRush.Samples {
                 switch(__name)
                 {
                     case "genericField":
-                    var __genericThis0_genericFieldClassId = reader.ReadJsonClassId();
+                    var ____genericThis0_genericFieldFrame = reader.BeginObject(true, false);
+                    var __genericThis0_genericFieldClassId = ____genericThis0_genericFieldFrame.ClassId;
                     if (__genericThis0.genericField == null || __genericThis0.genericField.GetClassId() != __genericThis0_genericFieldClassId) {
                         __genericThis0.genericField = (ZergRush.Samples.CodeGenSamples)ZergRush.Samples.CodeGenSamples.CreatePolymorphic(__genericThis0_genericFieldClassId);
                     }
-                    __genericThis0.genericField.ReadFromJson(reader);
+                    reader.ReadObject(__genericThis0.genericField, ____genericThis0_genericFieldFrame);
                     return true;
                     default: return false;
                 }
